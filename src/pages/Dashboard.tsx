@@ -67,7 +67,7 @@ export function DashboardPage() {
       ].filter(Boolean);
 
       setData({
-        cards: [
+        cards: ([
           canOrdenes
             ? {
                 label: "Ordenes pendientes",
@@ -115,7 +115,7 @@ export function DashboardPage() {
                 tone: "warning",
               }
             : null,
-        ].filter((card): card is Card => card !== null),
+        ] as Array<Card | null>).filter((card): card is Card => card !== null),
         ordenes: ordItems.slice(0, 6),
         tareas: tarItems.slice(0, 6),
         warnings,

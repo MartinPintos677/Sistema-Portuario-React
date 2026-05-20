@@ -33,6 +33,7 @@ import type {
   EstadoOrdenItem,
   EstadoTarea,
   EventoCalendario,
+  LiquidacionEstiba,
   Maquinaria,
   Mantenimiento,
   Notificacion,
@@ -1192,7 +1193,7 @@ export function OrdenesPage() {
             )}
           </EntityActions>
         )}
-        columns={[
+        columns={([
           { key: "idOrdenServicio", header: "#" },
           { key: "cliente", header: "Cliente" },
           { key: "encargado", header: "Encargado" },
@@ -1202,14 +1203,16 @@ export function OrdenesPage() {
           {
             key: "fechaSolicitud",
             header: "Solicitud",
-            render: (r) => formatDateTime(r.fechaSolicitud),
+            render: (r: OrdenServicio) => formatDateTime(r.fechaSolicitud),
           },
           {
             key: "estadoOrden",
             header: "Estado",
-            render: (r) => <StatusBadge>{r.estadoOrden}</StatusBadge>,
+            render: (r: OrdenServicio) => <StatusBadge>{r.estadoOrden}</StatusBadge>,
           },
-        ].filter((column): column is Column<OrdenServicio> => column !== null)}
+        ] as Array<Column<OrdenServicio> | null>).filter(
+          (column): column is Column<OrdenServicio> => column !== null,
+        )}
       />
       <OrdenDetalleModal orden={selected} onClose={() => setSelected(null)} />
       <OrdenFormModal
@@ -1848,7 +1851,7 @@ function FacturacionOrdenModal({
     try {
       await ordenesApi.facturacion({
         idOrdenServicio: orden.idOrdenServicio,
-        fechaEnvio: dateTimeValue(form.get("fechaEnvio")),
+        fechaEnvio: dateTimeValue(form.get("fechaEnvio")) ?? new Date().toISOString(),
         estado: requiredValue(form.get("estado")),
         referenciaGSoft: formValue(form.get("referenciaGSoft")),
         observaciones: formValue(form.get("observaciones")),

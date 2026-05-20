@@ -260,7 +260,7 @@ export interface DetalleCitacion {
   idCuadrilla?: number | null;
   cuadrilla?: string;
   idLiquidacion?: number | null;
-  asistencia: boolean;
+  asistencia?: boolean | null;
   horaInicioReal?: string;
   horaFinReal?: string;
   horasTrabajadas?: number;
