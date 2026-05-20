@@ -67,55 +67,57 @@ export function DashboardPage() {
       ].filter(Boolean);
 
       setData({
-        cards: ([
-          canOrdenes
-            ? {
-                label: "Ordenes pendientes",
-                value: ordItems.filter((o) => lower(o.estadoOrden).includes("pend")).length,
-                tone: "warning",
-              }
-            : null,
-          canOrdenes
-            ? {
-                label: "Ordenes validadas",
-                value: ordItems.filter((o) => lower(o.estadoOrden).includes("valid")).length,
-                tone: "success",
-              }
-            : null,
-          canMaquinaria
-            ? {
-                label: "Maquinaria activa",
-                value: maqItems.filter((m) => m.activa).length,
-                tone: "info",
-              }
-            : null,
-          canMantenimiento
-            ? {
-                label: "Mantenimientos pendientes",
-                value: mantItems.filter((m) => lower(m.estadoMantenimiento).includes("pend"))
-                  .length,
-                tone: "warning",
-              }
-            : null,
-          canEstiba
-            ? {
-                label: "Citaciones proximas",
-                value: citItems.filter((c) => new Date(c.fecha) >= new Date()).length,
-                tone: "info",
-              }
-            : null,
-          canAdministracion
-            ? {
-                label: "Tareas pendientes",
-                value: tarItems.filter(
-                  (t) =>
-                    !lower(t.estadoTarea).includes("complet") &&
-                    !lower(t.estadoTarea).includes("finaliz"),
-                ).length,
-                tone: "warning",
-              }
-            : null,
-        ] as Array<Card | null>).filter((card): card is Card => card !== null),
+        cards: (
+          [
+            canOrdenes
+              ? {
+                  label: "Ordenes pendientes",
+                  value: ordItems.filter((o) => lower(o.estadoOrden).includes("pend")).length,
+                  tone: "warning",
+                }
+              : null,
+            canOrdenes
+              ? {
+                  label: "Ordenes validadas",
+                  value: ordItems.filter((o) => lower(o.estadoOrden).includes("valid")).length,
+                  tone: "success",
+                }
+              : null,
+            canMaquinaria
+              ? {
+                  label: "Maquinaria activa",
+                  value: maqItems.filter((m) => m.activa).length,
+                  tone: "info",
+                }
+              : null,
+            canMantenimiento
+              ? {
+                  label: "Mantenimientos pendientes",
+                  value: mantItems.filter((m) => lower(m.estadoMantenimiento).includes("pend"))
+                    .length,
+                  tone: "warning",
+                }
+              : null,
+            canEstiba
+              ? {
+                  label: "Citaciones proximas",
+                  value: citItems.filter((c) => new Date(c.fecha) >= new Date()).length,
+                  tone: "info",
+                }
+              : null,
+            canAdministracion
+              ? {
+                  label: "Tareas pendientes",
+                  value: tarItems.filter(
+                    (t) =>
+                      !lower(t.estadoTarea).includes("complet") &&
+                      !lower(t.estadoTarea).includes("finaliz"),
+                  ).length,
+                  tone: "warning",
+                }
+              : null,
+          ] as Array<Card | null>
+        ).filter((card): card is Card => card !== null),
         ordenes: ordItems.slice(0, 6),
         tareas: tarItems.slice(0, 6),
         warnings,

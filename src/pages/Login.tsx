@@ -9,7 +9,9 @@ export function LoginPage() {
   const { login, sessionMessage } = useAuth();
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: { pathname?: string } } };
-  const [correo, setCorreo] = useState(import.meta.env.DEV ? "admin.demo@sistema-portuario.local" : "");
+  const [correo, setCorreo] = useState(
+    import.meta.env.DEV ? "admin.demo@sistema-portuario.local" : "",
+  );
   const [password, setPassword] = useState(import.meta.env.DEV ? "clave123" : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function LoginPage() {
               autoFocus
             />
           </Field>
-          <Field label="Contraseña" required>
+          <Field label="Contrasena" required>
             <TextInput
               type="password"
               value={password}

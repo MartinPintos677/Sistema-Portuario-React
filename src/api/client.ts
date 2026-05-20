@@ -84,7 +84,7 @@ export function extractErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as ProblemDetails | undefined;
     if (error.response?.status === 401 && isAuthEndpoint(error.config?.url)) {
-      return "Correo o contraseña incorrectos.";
+      return "Correo o contrasena incorrectos.";
     }
     if (data) {
       if (data.detail) return data.title ? `${data.title}: ${data.detail}` : data.detail;

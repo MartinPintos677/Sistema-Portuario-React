@@ -761,7 +761,7 @@ function UsuarioFormModal({
         </div>
         {!usuario && (
           <Field
-            label="Contraseña"
+            label="Contrasena"
             required
             hint="Minimo 6 caracteres."
             error={formErrors.password}
@@ -1193,26 +1193,26 @@ export function OrdenesPage() {
             )}
           </EntityActions>
         )}
-        columns={([
-          { key: "idOrdenServicio", header: "#" },
-          { key: "cliente", header: "Cliente" },
-          { key: "encargado", header: "Encargado" },
-          isOperario ? null : { key: "operario", header: "Operario" },
-          { key: "maquinariaAsignada", header: "Maquinaria" },
-          { key: "lugarServicio", header: "Lugar" },
-          {
-            key: "fechaSolicitud",
-            header: "Solicitud",
-            render: (r: OrdenServicio) => formatDateTime(r.fechaSolicitud),
-          },
-          {
-            key: "estadoOrden",
-            header: "Estado",
-            render: (r: OrdenServicio) => <StatusBadge>{r.estadoOrden}</StatusBadge>,
-          },
-        ] as Array<Column<OrdenServicio> | null>).filter(
-          (column): column is Column<OrdenServicio> => column !== null,
-        )}
+        columns={(
+          [
+            { key: "idOrdenServicio", header: "#" },
+            { key: "cliente", header: "Cliente" },
+            { key: "encargado", header: "Encargado" },
+            isOperario ? null : { key: "operario", header: "Operario" },
+            { key: "maquinariaAsignada", header: "Maquinaria" },
+            { key: "lugarServicio", header: "Lugar" },
+            {
+              key: "fechaSolicitud",
+              header: "Solicitud",
+              render: (r: OrdenServicio) => formatDateTime(r.fechaSolicitud),
+            },
+            {
+              key: "estadoOrden",
+              header: "Estado",
+              render: (r: OrdenServicio) => <StatusBadge>{r.estadoOrden}</StatusBadge>,
+            },
+          ] as Array<Column<OrdenServicio> | null>
+        ).filter((column): column is Column<OrdenServicio> => column !== null)}
       />
       <OrdenDetalleModal orden={selected} onClose={() => setSelected(null)} />
       <OrdenFormModal
