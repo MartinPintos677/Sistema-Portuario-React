@@ -35,8 +35,8 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md rounded-xl bg-card p-8 shadow-2xl">
         <div className="mb-6 flex flex-col items-center">
-          <img src={logo} alt="Sistema Portuario" className="h-16 w-auto" />
-          <h1 className="mt-3 text-2xl font-bold text-foreground">Sistema Portuario</h1>
+          <img src={logo} alt="Sistema Portuario" className="h-24 w-auto sm:h-28" />
+          <h1 className="mt-4 text-2xl font-bold text-foreground">Sistema Portuario</h1>
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             Sistema de operaciones
           </p>
