@@ -1,3 +1,7 @@
+/**
+ * Tipos compartidos entre pantallas, servicios y componentes.
+ * Reflejan los DTO principales expuestos por la API del sistema portuario.
+ */
 export interface PagedResponse<T> {
   items: T[];
   pageNumber: number;

@@ -1,3 +1,7 @@
+/**
+ * Indicadores de carga compartidos.
+ * Evitan que cada pantalla implemente su propio spinner o skeleton de tabla.
+ */
 export function Spinner({ size = 24 }: { size?: number }) {
   return (
     <span

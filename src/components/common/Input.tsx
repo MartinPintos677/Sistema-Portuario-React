@@ -13,6 +13,10 @@ interface FieldProps {
   children: ReactNode;
 }
 
+/**
+ * Wrapper de campos de formulario.
+ * Mantiene label, requerido, ayuda y error con el mismo formato en todo el sistema.
+ */
 export function Field({ label, error, hint, required, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -31,6 +35,7 @@ export function Field({ label, error, hint, required, children }: FieldProps) {
 const baseInput =
   "h-10 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-60";
 
+// Inputs base usados por formularios CRUD para conservar estilos y foco consistentes.
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = "", ...rest } = props;
   return <input {...rest} className={`${baseInput} ${className}`} />;

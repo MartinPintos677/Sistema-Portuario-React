@@ -1,7 +1,13 @@
-﻿import axios, { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import apiConfig from "@/config/apiConfig";
 import type { LoginResponse, ProblemDetails } from "@/types";
 
+/**
+ * Cliente HTTP centralizado.
+ *
+ * Toda llamada a la API pasa por esta instancia para compartir base URL,
+ * headers, token JWT, refresh token y normalizacion de errores.
+ */
 export const apiClient = axios.create({
   baseURL: apiConfig.BASE_URL,
   headers: { "Content-Type": "application/json" },
@@ -9,6 +15,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
+    // Se lee en cada request para respetar cambios de login, refresh o logout.
     const token = localStorage.getItem(apiConfig.TOKEN_KEY);
     if (token) {
       config.headers = config.headers ?? {};
@@ -19,12 +26,17 @@ apiClient.interceptors.request.use((config) => {
 });
 
 let onUnauthorized: ((reason?: string) => void) | null = null;
+
+/**
+ * Conecta los 401 definitivos con AuthContext sin acoplar este archivo a React.
+ */
 export const setUnauthorizedHandler = (fn: (reason?: string) => void) => {
   onUnauthorized = fn;
 };
 
 let refreshing: Promise<string | null> | null = null;
 
+// Los endpoints de auth no deben disparar refresh ni retry automatico.
 function isAuthEndpoint(url?: string) {
   return Boolean(
     url?.includes("/Auth/login") ||
@@ -33,6 +45,10 @@ function isAuthEndpoint(url?: string) {
   );
 }
 
+/**
+ * Renueva el access token con el refresh token local.
+ * La promesa compartida evita multiples renovaciones simultaneas.
+ */
 async function refreshAccessToken() {
   if (typeof window === "undefined") return null;
   const refreshToken = localStorage.getItem(apiConfig.REFRESH_TOKEN_KEY);
@@ -80,6 +96,10 @@ apiClient.interceptors.response.use(
   },
 );
 
+/**
+ * Convierte errores del backend en mensajes legibles para las pantallas.
+ * Soporta ProblemDetails, errores de validacion y fallas de conexion.
+ */
 export function extractErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as ProblemDetails | undefined;

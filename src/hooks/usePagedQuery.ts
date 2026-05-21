@@ -3,6 +3,11 @@ import { extractErrorMessage } from "@/api/client";
 import type { PagedResponse } from "@/types";
 import apiConfig from "@/config/apiConfig";
 
+/**
+ * Hook reusable para listados paginados.
+ * Centraliza loading, error, pagina actual y recarga para que los modulos
+ * mantengan el mismo comportamiento en tablas.
+ */
 export function usePagedQuery<T>(
   fetcher: (page: { pageNumber: number; pageSize: number }) => Promise<PagedResponse<T>>,
   deps: unknown[] = [],

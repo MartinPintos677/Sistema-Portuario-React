@@ -29,7 +29,16 @@ import type {
   Trazabilidad,
 } from "@/types";
 
+/**
+ * Capa de servicios del frontend.
+ *
+ * Agrupa llamadas por modulo y mantiene a las pantallas aisladas de las rutas
+ * HTTP concretas. Cada metodo devuelve datos de dominio en vez de respuestas
+ * Axios completas.
+ */
 type Page = { pageNumber?: number; pageSize?: number };
+
+// Normaliza parametros de paginacion antes de enviarlos a la API.
 const params = (p?: Page) => ({
   pageNumber: p?.pageNumber ?? 1,
   pageSize: Math.min(p?.pageSize ?? 20, 100),
@@ -90,6 +99,12 @@ export const maquinariasApi = {
       .get<PagedResponse<Maquinaria>>("/maquinarias", { params: params(p) })
       .then((r) => r.data),
   get: (id: number) => apiClient.get<Maquinaria>(`/maquinarias/${id}`).then((r) => r.data),
+  historialHoras: (id: number, p?: Page) =>
+    apiClient
+      .get<PagedResponse<RegistroHorasMaquinaria>>(`/maquinarias/${id}/registros-horas`, {
+        params: params(p),
+      })
+      .then((r) => r.data),
   tipos: () => apiClient.get<TipoMaquinaria[]>("/maquinarias/tipos").then((r) => r.data),
   create: (data: Partial<Maquinaria>) =>
     apiClient.post<Maquinaria>("/maquinarias", data).then((r) => r.data),

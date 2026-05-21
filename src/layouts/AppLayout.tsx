@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/auth/AuthContext";
 import { puedeVer, type ModuloKey } from "@/auth/permisos";
 import logo from "@/assets/Logo.jpeg";
+import analystLogo from "@/assets/LogoAnalista.png";
 
 interface NavItem {
   to: string;
@@ -28,6 +29,10 @@ interface NavItem {
   icon: LucideIcon;
 }
 
+/**
+ * Navegacion principal del sistema.
+ * Cada item declara el modulo requerido para poder filtrar el menu por rol.
+ */
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", modulo: "dashboard", icon: LayoutDashboard },
   { to: "/ordenes", label: "Ordenes de servicio", modulo: "ordenes", icon: ClipboardList },
@@ -42,6 +47,10 @@ const NAV: NavItem[] = [
   { to: "/trazabilidad", label: "Trazabilidad", modulo: "trazabilidad", icon: ScrollText },
 ];
 
+/**
+ * Layout privado de la aplicacion.
+ * Renderiza sidebar, header de usuario y el contenido de la ruta activa.
+ */
 export function AppLayout() {
   const { usuario, logout } = useAuth();
   const [open, setOpen] = useState(false);
@@ -57,9 +66,7 @@ export function AppLayout() {
             <SidebarLink key={n.to} {...n} />
           ))}
         </nav>
-        <div className="border-t border-primary-foreground/10 p-4 text-xs text-primary-foreground/60">
-          Sistema Portuario - v1.0
-        </div>
+        <DeveloperCredit />
       </aside>
 
       {open && (
@@ -72,6 +79,7 @@ export function AppLayout() {
                 <SidebarLink key={n.to} {...n} />
               ))}
             </nav>
+            <DeveloperCredit />
           </aside>
         </div>
       )}
@@ -123,6 +131,9 @@ export function AppLayout() {
   );
 }
 
+/**
+ * Encabezado de marca reutilizado en sidebar desktop y menu mobile.
+ */
 function Brand({ onClose }: { onClose?: () => void }) {
   return (
     <div className="flex h-16 items-center justify-between gap-3 border-b border-primary-foreground/10 px-4">
@@ -144,6 +155,22 @@ function Brand({ onClose }: { onClose?: () => void }) {
           <X className="h-5 w-5" />
         </button>
       )}
+    </div>
+  );
+}
+
+/**
+ * Credito del desarrollador mostrado en el pie del menu lateral.
+ */
+function DeveloperCredit() {
+  return (
+    <div className="border-t border-primary-foreground/10 px-4 py-4">
+      <div className="flex items-center gap-3 text-primary-foreground/75">
+        <img src={analystLogo} alt="Martin Pintos" className="h-10 w-10 shrink-0 object-contain" />
+        <div className="min-w-0 text-[11px] leading-4">
+          Desarrollado por Martin Pintos - Analista de Sistemas
+        </div>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,11 @@ import { Empty } from "./Empty";
 import { Button } from "./Button";
 import type { PagedResponse } from "@/types";
 
+/**
+ * Tabla generica usada por los modulos CRUD.
+ * Acepta datos paginados de la API o filas filtradas localmente, manteniendo
+ * estados consistentes de carga, error, vacio y paginacion.
+ */
 export interface Column<T> {
   key: string;
   header: ReactNode;

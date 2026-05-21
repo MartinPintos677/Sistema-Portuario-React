@@ -1,6 +1,12 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 
+/**
+ * Modal base del sistema.
+ * Maneja cierre por Escape, bloqueo de scroll y estructura comun para titulos,
+ * contenido y pie de acciones.
+ */
 interface ModalProps {
   open: boolean;
   onClose: () => void;
@@ -50,7 +56,7 @@ export function Modal({
     >
       <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={onClose} />
       <div
-        className={`relative w-full ${sizes[size]} rounded-t-xl sm:rounded-xl border border-border bg-card shadow-2xl max-h-[90vh] flex flex-col`}
+        className={`relative flex max-h-[90vh] w-full ${sizes[size]} flex-col rounded-t-xl border border-border bg-card shadow-2xl sm:rounded-xl`}
       >
         {(title || description) && (
           <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
@@ -61,9 +67,9 @@ export function Modal({
             <button
               onClick={onClose}
               aria-label="Cerrar"
-              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="-mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              x
+              <X className="h-4 w-4" />
             </button>
           </div>
         )}

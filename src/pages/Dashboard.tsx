@@ -26,6 +26,11 @@ interface DashboardData {
   warnings: string[];
 }
 
+/**
+ * Resumen operativo inicial.
+ * Carga solo los modulos permitidos para el rol actual y tolera fallas parciales
+ * para que una API secundaria no deje inutilizable todo el dashboard.
+ */
 export function DashboardPage() {
   const { usuario } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);

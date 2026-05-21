@@ -1,4 +1,9 @@
 import type { ReactNode } from "react";
+
+/**
+ * Encabezado estandar de pagina.
+ * Reserva un area consistente para titulo, descripcion y acciones primarias.
+ */
 export function PageHeader({
   title,
   description,

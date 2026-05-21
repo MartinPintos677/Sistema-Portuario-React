@@ -19,6 +19,10 @@ import {
   TrazabilidadPage,
 } from "@/pages/modules";
 
+/**
+ * Decide la primera pantalla segun el estado de sesion restaurado.
+ * Mientras AuthProvider lee localStorage evita redirecciones prematuras.
+ */
 function RootRedirect() {
   const { isAuthenticated, loading } = useAuth();
 
@@ -26,6 +30,12 @@ function RootRedirect() {
   return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
 }
 
+/**
+ * Punto de entrada de la SPA.
+ *
+ * Reune providers globales y define el mapa de rutas. Las pantallas internas
+ * quedan bajo autenticacion y, cuando corresponde, bajo validacion de rol.
+ */
 export default function App() {
   return (
     <HashRouter>

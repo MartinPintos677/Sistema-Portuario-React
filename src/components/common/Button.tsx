@@ -18,6 +18,10 @@ const sizes: Record<Size, string> = {
   lg: "h-11 px-6 text-base",
 };
 
+/**
+ * Boton base de la interfaz.
+ * Unifica variantes visuales, tamanos, iconos y estado de carga.
+ */
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;

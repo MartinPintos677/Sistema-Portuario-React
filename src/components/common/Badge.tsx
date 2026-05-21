@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+
+// Mapa visual de estados comunes del dominio.
+// Normaliza espacios para aceptar valores como "En proceso" o "EnProceso".
 const map: Record<string, string> = {
   pendiente: "bg-warning/15 text-warning border-warning/30",
   asignada: "bg-info/15 text-info border-info/30",
@@ -16,6 +19,11 @@ const map: Record<string, string> = {
   inactiva: "bg-muted text-muted-foreground border-border",
   default: "bg-muted text-muted-foreground border-border",
 };
+
+/**
+ * Badge de estado reutilizable.
+ * Usa el texto recibido como fallback para elegir color sin exigir logica extra.
+ */
 export function StatusBadge({ children, variant }: { children: ReactNode; variant?: string }) {
   const raw = (variant ?? String(children)).toLowerCase();
   const cls = map[raw.replace(/\s/g, "")] ?? map[raw] ?? map.default;

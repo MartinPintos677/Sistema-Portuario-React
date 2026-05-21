@@ -1,5 +1,9 @@
 import type { RolNombre } from "@/types";
 
+/**
+ * Catalogo de modulos navegables del frontend.
+ * Debe mantenerse alineado con AppLayout y las rutas protegidas.
+ */
 export type ModuloKey =
   | "dashboard"
   | "empresas"
@@ -13,6 +17,10 @@ export type ModuloKey =
   | "notificaciones"
   | "trazabilidad";
 
+/**
+ * Matriz de permisos visuales por rol.
+ * La API sigue siendo la fuente final de seguridad; esto controla navegacion y UI.
+ */
 export const permisosPorRol: Record<RolNombre, ModuloKey[]> = {
   Administrador: [
     "dashboard",
@@ -50,6 +58,9 @@ export const permisosPorRol: Record<RolNombre, ModuloKey[]> = {
   Operario: ["dashboard", "ordenes", "notificaciones"],
 };
 
+/**
+ * Helper pequeno para decidir si una pantalla o accion debe mostrarse.
+ */
 export function puedeVer(rol: string | undefined, modulo: ModuloKey): boolean {
   if (!rol) return false;
   const lista = permisosPorRol[rol as RolNombre];

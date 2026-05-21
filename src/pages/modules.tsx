@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { CheckCircle2, Edit, Eye, FileText, Plus, Power, Wrench } from "lucide-react";
+import { CheckCircle2, Edit, Eye, FileText, History, Plus, Power, Wrench } from "lucide-react";
 import { extractErrorMessage } from "@/api/client";
 import {
   administracionApi,
@@ -40,6 +40,7 @@ import type {
   OrdenServicio,
   PagedResponse,
   PersonalEstiba,
+  RegistroHorasMaquinaria,
   Rol,
   TareaAdministrativa,
   TipoMantenimiento,
@@ -48,10 +49,21 @@ import type {
   Usuario,
 } from "@/types";
 
+/**
+ * Pantallas operativas del sistema.
+ *
+ * Este archivo concentra los modulos CRUD principales y comparte helpers de
+ * formularios, tablas, estados y trazabilidad para mantener una experiencia
+ * uniforme entre secciones.
+ */
 type PageParams = { pageNumber: number; pageSize: number };
 type OnSaved = () => void;
 type FormErrors = Record<string, string>;
 
+/**
+ * Contenedor estandar para listados paginados.
+ * Se encarga de header, filtros, tabla, acciones por fila y recarga.
+ */
 function ModuleShell<T>({
   title,
   description,
@@ -197,10 +209,24 @@ function formatDateTime(value?: string | null) {
   }).format(date);
 }
 
-type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+function formatDateOnly(value?: string | null) {
+  if (!value) return "-";
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  return value;
+}
 
-function parseJsonValue(value?: string | null): JsonValue | string | null {
+/**
+ * Helpers de trazabilidad.
+ * Transforman JSON crudo de la auditoria en paneles legibles y, en ediciones,
+ * muestran solo los campos que realmente cambiaron.
+ */
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+type JsonRecord = { [key: string]: JsonValue };
+
+function parseJsonValue(value?: string | JsonValue | null): JsonValue | string | null {
   if (!value) return null;
+  if (typeof value !== "string") return value;
   try {
     return JSON.parse(value) as JsonValue;
   } catch {
@@ -208,8 +234,83 @@ function parseJsonValue(value?: string | null): JsonValue | string | null {
   }
 }
 
-function isJsonRecord(value: JsonValue | string | null): value is { [key: string]: JsonValue } {
+function isJsonRecord(value: JsonValue | string | null): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function sortedJson(value: JsonValue): string {
+  if (Array.isArray(value))
+    return JSON.stringify(value.map((item) => JSON.parse(sortedJson(item))));
+  if (isJsonRecord(value)) {
+    return JSON.stringify(
+      Object.keys(value)
+        .sort()
+        .reduce<JsonRecord>((acc, key) => {
+          acc[key] = JSON.parse(sortedJson(value[key])) as JsonValue;
+          return acc;
+        }, {}),
+    );
+  }
+  return JSON.stringify(value);
+}
+
+function jsonValuesEqual(a: JsonValue | undefined, b: JsonValue | undefined) {
+  return sortedJson(a ?? null) === sortedJson(b ?? null);
+}
+
+function auditActionKind(action?: string | null) {
+  const normalized = normalizeText(action)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (/(crear|alta|insert|create|add)/.test(normalized)) return "create";
+  if (/(eliminar|baja|delete|remove)/.test(normalized)) return "delete";
+  if (/(actualizar|modificar|editar|update|edit)/.test(normalized)) return "update";
+  return "other";
+}
+
+function diffAuditRecords(previous: JsonRecord, next: JsonRecord) {
+  const previousDiff: JsonRecord = {};
+  const nextDiff: JsonRecord = {};
+  const keys = new Set([...Object.keys(previous), ...Object.keys(next)]);
+
+  keys.forEach((key) => {
+    if (!jsonValuesEqual(previous[key], next[key])) {
+      if (key in previous) previousDiff[key] = previous[key];
+      if (key in next) nextDiff[key] = next[key];
+    }
+  });
+
+  return { previousDiff, nextDiff };
+}
+
+function buildAuditPanels(row: Trazabilidad | null) {
+  if (!row) return [];
+
+  const previous = parseJsonValue(row.datosPrevios);
+  const next = parseJsonValue(row.datosNuevos);
+  const kind = auditActionKind(row.accion);
+
+  if (kind === "create") {
+    return [{ title: "Datos nuevos", value: next }];
+  }
+
+  if (kind === "delete") {
+    return [{ title: "Datos previos", value: previous }];
+  }
+
+  if (kind === "update" && isJsonRecord(previous) && isJsonRecord(next)) {
+    const { previousDiff, nextDiff } = diffAuditRecords(previous, next);
+    return [
+      { title: "Datos previos", value: previousDiff },
+      { title: "Datos nuevos", value: nextDiff },
+    ];
+  }
+
+  return [
+    { title: "Datos previos", value: previous },
+    { title: "Datos nuevos", value: next },
+  ];
 }
 
 function humanizeJsonKey(key: string) {
@@ -265,8 +366,13 @@ function renderJsonValue(value: JsonValue): ReactNode {
   );
 }
 
-function JsonAuditPanel({ title, value }: { title: string; value?: string | null }) {
+/**
+ * Presenta un bloque de datos de auditoria con formato estable para valores
+ * simples, booleanos, fechas, arrays y objetos anidados.
+ */
+function JsonAuditPanel({ title, value }: { title: string; value?: string | JsonValue | null }) {
   const parsed = parseJsonValue(value);
+  const recordEntries = isJsonRecord(parsed) ? Object.entries(parsed) : [];
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -277,18 +383,22 @@ function JsonAuditPanel({ title, value }: { title: string; value?: string | null
         {parsed === null ? (
           <div className="px-4 py-6 text-sm text-muted-foreground">Sin datos registrados.</div>
         ) : isJsonRecord(parsed) ? (
-          <dl className="divide-y divide-border">
-            {Object.entries(parsed).map(([key, fieldValue]) => (
-              <div key={key} className="grid gap-2 px-4 py-3 sm:grid-cols-[11rem_minmax(0,1fr)]">
-                <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                  {humanizeJsonKey(key)}
-                </dt>
-                <dd className="min-w-0 break-words text-sm text-foreground">
-                  {renderJsonValue(fieldValue)}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          recordEntries.length === 0 ? (
+            <div className="px-4 py-6 text-sm text-muted-foreground">Sin cambios para mostrar.</div>
+          ) : (
+            <dl className="divide-y divide-border">
+              {recordEntries.map(([key, fieldValue]) => (
+                <div key={key} className="grid gap-2 px-4 py-3 sm:grid-cols-[11rem_minmax(0,1fr)]">
+                  <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                    {humanizeJsonKey(key)}
+                  </dt>
+                  <dd className="min-w-0 break-words text-sm text-foreground">
+                    {renderJsonValue(fieldValue)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )
         ) : (
           <div className="whitespace-pre-wrap break-words px-4 py-3 text-sm text-foreground">
             {renderJsonValue(parsed)}
@@ -1903,6 +2013,7 @@ export function MaquinariasPage() {
   const { hasRole } = useAuth();
   const [editing, setEditing] = useState<Maquinaria | null>(null);
   const [hoursTarget, setHoursTarget] = useState<Maquinaria | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<Maquinaria | null>(null);
   const [openForm, setOpenForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [search, setSearch] = useState("");
@@ -1984,33 +2095,41 @@ export function MaquinariasPage() {
             </Button>
           ) : null
         }
-        rowActions={
-          canManageMaquinaria
-            ? (row) => (
-                <EntityActions>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    icon={<Edit className="h-4 w-4" />}
-                    onClick={() => {
-                      setEditing(row);
-                      setOpenForm(true);
-                    }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    icon={<Wrench className="h-4 w-4" />}
-                    onClick={() => setHoursTarget(row)}
-                  >
-                    Horas
-                  </Button>
-                </EntityActions>
-              )
-            : undefined
-        }
+        rowActions={(row) => (
+          <EntityActions>
+            <Button
+              size="sm"
+              variant="outline"
+              icon={<History className="h-4 w-4" />}
+              onClick={() => setHistoryTarget(row)}
+            >
+              Historial
+            </Button>
+            {canManageMaquinaria && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  icon={<Edit className="h-4 w-4" />}
+                  onClick={() => {
+                    setEditing(row);
+                    setOpenForm(true);
+                  }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<Wrench className="h-4 w-4" />}
+                  onClick={() => setHoursTarget(row)}
+                >
+                  Horas
+                </Button>
+              </>
+            )}
+          </EntityActions>
+        )}
         columns={[
           { key: "codigo", header: "Codigo" },
           { key: "nombre", header: "Nombre" },
@@ -2036,6 +2155,7 @@ export function MaquinariasPage() {
         onClose={() => setHoursTarget(null)}
         onSaved={() => setRefreshKey((key) => key + 1)}
       />
+      <HistorialHorasModal maquinaria={historyTarget} onClose={() => setHistoryTarget(null)} />
     </>
   );
 }
@@ -2207,6 +2327,72 @@ function MaquinariaFormModal({
           </Button>
         </div>
       </form>
+    </Modal>
+  );
+}
+
+function HistorialHorasModal({
+  maquinaria,
+  onClose,
+}: {
+  maquinaria: Maquinaria | null;
+  onClose: () => void;
+}) {
+  const [data, setData] = useState<PagedResponse<RegistroHorasMaquinaria> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+
+  useEffect(() => {
+    setPageNumber(1);
+  }, [maquinaria?.idMaquinaria]);
+
+  useEffect(() => {
+    if (!maquinaria) return;
+    setLoading(true);
+    setError(null);
+    maquinariasApi
+      .historialHoras(maquinaria.idMaquinaria, { pageNumber, pageSize: 8 })
+      .then(setData)
+      .catch((err) => setError(extractErrorMessage(err)))
+      .finally(() => setLoading(false));
+  }, [maquinaria, pageNumber]);
+
+  return (
+    <Modal
+      open={!!maquinaria}
+      onClose={onClose}
+      title="Historial de horas"
+      description={
+        maquinaria
+          ? `${maquinaria.codigo} - ${maquinaria.nombre} - ${maquinaria.horasAcumuladas} horas acumuladas`
+          : ""
+      }
+      size="xl"
+    >
+      <DataTable<RegistroHorasMaquinaria>
+        columns={[
+          { key: "fecha", header: "Fecha", render: (row) => formatDateOnly(row.fecha) },
+          {
+            key: "idOrdenServicio",
+            header: "Orden",
+            render: (row) => (row.idOrdenServicio ? `#${row.idOrdenServicio}` : "Sin orden"),
+          },
+          { key: "horasTrabajadas", header: "Horas" },
+          {
+            key: "observacion",
+            header: "Observacion",
+            render: (row) => row.observacion ?? "-",
+          },
+        ]}
+        data={data}
+        loading={loading}
+        error={error}
+        rowKey={(row) => row.idRegistroHoras ?? `${row.fecha}-${row.horasTrabajadas}`}
+        pageNumber={pageNumber}
+        onPageChange={setPageNumber}
+        emptyText="Todavia no hay registros de horas para esta maquinaria."
+      />
     </Modal>
   );
 }
@@ -4153,7 +4339,10 @@ function LiquidacionModal({
   );
 }
 
-// NOTIFICACIONES
+// Estados simples usados por el modal de cambio de estado de notificaciones.
+// Se mantienen en frontend porque el backend recibe texto libre para este campo.
+const NOTIFICACION_ESTADOS = ["Pendiente", "En proceso", "Enviada", "Fallida", "Cancelada"];
+
 export function NotificacionesPage() {
   const { hasRole } = useAuth();
   const toast = useToast();
@@ -4199,11 +4388,17 @@ export function NotificacionesPage() {
               </SelectInput>
             </Field>
             <Field label="Estado">
-              <TextInput
+              <SelectInput
                 value={estadoFilter}
                 onChange={(event) => setEstadoFilter(event.target.value)}
-                placeholder="Estado"
-              />
+              >
+                <option value="">Todos</option>
+                {NOTIFICACION_ESTADOS.map((estado) => (
+                  <option key={estado} value={estado}>
+                    {estado}
+                  </option>
+                ))}
+              </SelectInput>
             </Field>
             <div className="flex items-end">
               <Button type="button" variant="outline" className="w-full" onClick={clearFilters}>
@@ -4373,12 +4568,13 @@ function EstadoNotificacionModal({
     <Modal open={!!notificacion} onClose={onClose} title="Cambiar estado">
       <form className="grid gap-4" onSubmit={submit}>
         <Field label="Estado" required>
-          <TextInput
-            name="estado"
-            defaultValue={notificacion?.estado ?? ""}
-            required
-            maxLength={80}
-          />
+          <SelectInput name="estado" defaultValue={notificacion?.estado ?? "Pendiente"} required>
+            {NOTIFICACION_ESTADOS.map((estado) => (
+              <option key={estado} value={estado}>
+                {estado}
+              </option>
+            ))}
+          </SelectInput>
         </Field>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>
@@ -4400,6 +4596,8 @@ export function TrazabilidadPage() {
   const [accionFilter, setAccionFilter] = useState("");
   const [usuarioFilter, setUsuarioFilter] = useState("");
   const [registroFilter, setRegistroFilter] = useState("");
+  const auditPanels = buildAuditPanels(selected);
+
   return (
     <>
       <ModuleShell<Trazabilidad>
@@ -4484,9 +4682,10 @@ export function TrazabilidadPage() {
         title="Detalle de trazabilidad"
         size="xl"
       >
-        <div className="grid gap-4 xl:grid-cols-2">
-          <JsonAuditPanel title="Datos previos" value={selected?.datosPrevios} />
-          <JsonAuditPanel title="Datos nuevos" value={selected?.datosNuevos} />
+        <div className={auditPanels.length > 1 ? "grid gap-4 xl:grid-cols-2" : "grid gap-4"}>
+          {auditPanels.map((panel) => (
+            <JsonAuditPanel key={panel.title} title={panel.title} value={panel.value} />
+          ))}
         </div>
       </Modal>
     </>

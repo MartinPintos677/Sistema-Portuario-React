@@ -1,6 +1,12 @@
-﻿import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { AlertTriangle, CheckCircle2, Info, X, XCircle } from "lucide-react";
 
+/**
+ * Sistema de notificaciones livianas.
+ * Expone una API simple para mostrar mensajes globales sin acoplar pantallas
+ * a detalles visuales del toast.
+ */
 type ToastVariant = "success" | "error" | "info" | "warning";
 
 interface ToastItem {
@@ -20,17 +26,24 @@ interface ToastApi {
 const ToastCtx = createContext<ToastApi | undefined>(undefined);
 
 const styles: Record<ToastVariant, string> = {
-  success: "border-success/70 text-success",
-  error: "border-destructive text-destructive",
-  info: "border-info/70 text-info",
-  warning: "border-warning/70 text-warning-foreground",
+  success: "border-success/50",
+  error: "border-destructive/50",
+  info: "border-info/50",
+  warning: "border-warning/50",
 };
 
-const icons: Record<ToastVariant, string> = {
-  success: "OK",
-  error: "x",
-  info: "i",
-  warning: "!",
+const iconStyles: Record<ToastVariant, string> = {
+  success: "bg-success/10 text-success",
+  error: "bg-destructive/10 text-destructive",
+  info: "bg-info/10 text-info",
+  warning: "bg-warning/15 text-warning-foreground",
+};
+
+const icons: Record<ToastVariant, ReactNode> = {
+  success: <CheckCircle2 className="h-4 w-4" />,
+  error: <XCircle className="h-4 w-4" />,
+  info: <Info className="h-4 w-4" />,
+  warning: <AlertTriangle className="h-4 w-4" />,
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -77,20 +90,24 @@ function ToastCard({ item, onClose }: { item: ToastItem; onClose: () => void }) 
   }, []);
   return (
     <div
-      className={`pointer-events-auto flex w-full max-w-xl items-start gap-3 rounded-md border bg-card px-4 py-3 shadow-xl ring-1 ring-black/5 transition-all dark:bg-popover ${
+      className={`pointer-events-auto flex w-full max-w-xl items-start gap-3 rounded-lg border bg-card px-4 py-3 shadow-xl ring-1 ring-black/5 transition-all dark:bg-popover ${
         styles[item.variant]
       } ${visible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}`}
     >
-      <span className="text-base font-bold leading-none">{icons[item.variant]}</span>
+      <span
+        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${iconStyles[item.variant]}`}
+      >
+        {icons[item.variant]}
+      </span>
       <p className="min-w-0 flex-1 break-words text-sm leading-5 font-medium text-foreground">
         {item.message}
       </p>
       <button
         onClick={onClose}
-        className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         aria-label="Cerrar"
       >
-        x
+        <X className="h-4 w-4" />
       </button>
     </div>
   );
