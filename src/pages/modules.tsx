@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { CheckCircle2, Edit, Eye, FileText, History, Plus, Power, Wrench } from "lucide-react";
 import { extractErrorMessage } from "@/api/client";
@@ -52,7 +52,7 @@ import type {
 /**
  * Pantallas operativas del sistema.
  *
- * Este archivo concentra los modulos CRUD principales y comparte helpers de
+ * Este archivo concentra los módulos CRUD principales y comparte helpers de
  * formularios, tablas, estados y trazabilidad para mantener una experiencia
  * uniforme entre secciones.
  */
@@ -61,8 +61,8 @@ type OnSaved = () => void;
 type FormErrors = Record<string, string>;
 
 /**
- * Contenedor estandar para listados paginados.
- * Se encarga de header, filtros, tabla, acciones por fila y recarga.
+ * Contenedor estándar para listados páginados.
+ * Se encarga de header, filtros, tabla, acciónes por fila y recarga.
  */
 function ModuleShell<T>({
   title,
@@ -218,7 +218,7 @@ function formatDateOnly(value?: string | null) {
 
 /**
  * Helpers de trazabilidad.
- * Transforman JSON crudo de la auditoria en paneles legibles y, en ediciones,
+ * Transforman JSON crudo de la auditoría en paneles legibles y, en ediciónes,
  * muestran solo los campos que realmente cambiaron.
  */
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
@@ -367,7 +367,7 @@ function renderJsonValue(value: JsonValue): ReactNode {
 }
 
 /**
- * Presenta un bloque de datos de auditoria con formato estable para valores
+ * Presenta un bloque de datos de auditoría con formato estable para valores
  * simples, booleanos, fechas, arrays y objetos anidados.
  */
 function JsonAuditPanel({ title, value }: { title: string; value?: string | JsonValue | null }) {
@@ -643,7 +643,7 @@ export function UsuariosPage() {
     <>
       <ModuleShell<Usuario>
         title="Usuarios"
-        description="Gestion de usuarios del sistema"
+        description="GestiÃ³n de usuarios del sistema"
         fetcher={(p) => usuariosApi.list(p)}
         rowKey={(r) => r.idUsuario}
         deps={[refreshKey]}
@@ -871,7 +871,7 @@ function UsuarioFormModal({
         </div>
         {!usuario && (
           <Field
-            label="Contrasena"
+            label="ContraseÃ±a"
             required
             hint="Minimo 6 caracteres."
             error={formErrors.password}
@@ -1164,13 +1164,13 @@ export function OrdenesPage() {
   return (
     <>
       <ModuleShell<OrdenServicio>
-        title="Ordenes de servicio"
+        title="Ã“rdenes de servicio"
         description={
           isOperario
-            ? "Consulta de ordenes asignadas, registro de horas y finalizacion"
+            ? "Consulta de Ã³rdenes asignadas, registro de horas y finalizaciÃ³n"
             : isOficina
-              ? "Consulta de ordenes y registro de facturacion"
-              : "Alta, seguimiento, finalizacion y facturacion"
+              ? "Consulta de Ã³rdenes y registro de facturaciÃ³n"
+              : "Alta, seguimiento, finalizaciÃ³n y facturaciÃ³n"
         }
         fetcher={(p) => ordenesApi.list(p)}
         rowKey={(r) => r.idOrdenServicio}
@@ -1835,7 +1835,7 @@ function FinalizarOrdenModal({
   return (
     <Modal open={!!orden} onClose={onClose} title="Finalizar orden">
       <form className="grid gap-4" onSubmit={submit}>
-        <Field label="Hora de finalizacion" required>
+        <Field label="Hora de finalizaciÃ³n" required>
           <TextInput
             name="horaFinalizacion"
             type="datetime-local"
@@ -1925,7 +1925,7 @@ function RegistroHorasOrdenModal({
         <Field label="Horas trabajadas" required error={formErrors.horasTrabajadas}>
           <TextInput name="horasTrabajadas" type="number" step="0.01" min="0.01" required />
         </Field>
-        <Field label="Observacion">
+        <Field label="ObservaciÃ³n">
           <TextareaInput name="observacion" maxLength={500} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -1977,7 +1977,7 @@ function FacturacionOrdenModal({
   };
 
   return (
-    <Modal open={!!orden} onClose={onClose} title="Registrar facturacion">
+    <Modal open={!!orden} onClose={onClose} title="Registrar facturaciÃ³n">
       <form className="grid gap-4" onSubmit={submit}>
         <Field label="Fecha envio">
           <TextInput
@@ -2035,7 +2035,7 @@ export function MaquinariasPage() {
               <TextInput
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Codigo o nombre"
+                placeholder="CÃ³digo o nombre"
               />
             </Field>
             <Field label="Tipo">
@@ -2131,7 +2131,7 @@ export function MaquinariasPage() {
           </EntityActions>
         )}
         columns={[
-          { key: "codigo", header: "Codigo" },
+          { key: "codigo", header: "CÃ³digo" },
           { key: "nombre", header: "Nombre" },
           { key: "tipoMaquinaria", header: "Tipo" },
           { key: "marca", header: "Marca" },
@@ -2272,7 +2272,7 @@ function MaquinariaFormModal({
           </Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Codigo" required error={formErrors.codigo}>
+          <Field label="CÃ³digo" required error={formErrors.codigo}>
             <TextInput
               name="codigo"
               defaultValue={maquinaria?.codigo ?? ""}
@@ -2296,7 +2296,7 @@ function MaquinariaFormModal({
           <Field label="Modelo">
             <TextInput name="modelo" defaultValue={maquinaria?.modelo ?? ""} maxLength={100} />
           </Field>
-          <Field label="Matricula">
+          <Field label="MatrÃ­cula">
             <TextInput name="matricula" defaultValue={maquinaria?.matricula ?? ""} maxLength={80} />
           </Field>
         </div>
@@ -2381,7 +2381,7 @@ function HistorialHorasModal({
           { key: "horasTrabajadas", header: "Horas" },
           {
             key: "observacion",
-            header: "Observacion",
+            header: "ObservaciÃ³n",
             render: (row) => row.observacion ?? "-",
           },
         ]}
@@ -2391,7 +2391,7 @@ function HistorialHorasModal({
         rowKey={(row) => row.idRegistroHoras ?? `${row.fecha}-${row.horasTrabajadas}`}
         pageNumber={pageNumber}
         onPageChange={setPageNumber}
-        emptyText="Todavia no hay registros de horas para esta maquinaria."
+        emptyText="TodavÃ­a no hay registros de horas para esta maquinaria."
       />
     </Modal>
   );
@@ -2483,7 +2483,7 @@ function RegistroHorasModal({
             ))}
           </SelectInput>
         </Field>
-        <Field label="Observacion">
+        <Field label="ObservaciÃ³n">
           <TextareaInput name="observacion" maxLength={500} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -2533,7 +2533,7 @@ export function MantenimientosPage() {
               <TextInput
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Maquinaria o descripcion"
+                placeholder="Maquinaria o descripciÃ³n"
               />
             </Field>
             <Field label="Estado">
@@ -2836,7 +2836,7 @@ function MantenimientoFormModal({
             />
           </Field>
         </div>
-        <Field label="Descripcion" required>
+        <Field label="DescripciÃ³n" required>
           <TextareaInput
             name="descripcion"
             defaultValue={mantenimiento?.descripcion ?? ""}
@@ -2905,7 +2905,7 @@ function TipoMantenimientoModal({
         <Field label="Umbral horas">
           <TextInput name="umbralHoras" type="number" step="0.01" />
         </Field>
-        <Field label="Descripcion">
+        <Field label="DescripciÃ³n">
           <TextareaInput name="descripcion" maxLength={500} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -3161,7 +3161,7 @@ function TareaFormModal({
             defaultValue={toDateTimeInput(tarea?.fechaVencimiento)}
           />
         </Field>
-        <Field label="Descripcion">
+        <Field label="DescripciÃ³n">
           <TextareaInput
             name="descripcion"
             defaultValue={tarea?.descripcion ?? ""}
@@ -3253,7 +3253,7 @@ function EventoFormModal({
             <TextInput name="tipoEvento" required maxLength={80} />
           </Field>
         </div>
-        <Field label="Descripcion">
+        <Field label="DescripciÃ³n">
           <TextareaInput name="descripcion" maxLength={1000} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -3501,7 +3501,7 @@ export function EstibaPage() {
             columns={[
               { key: "empresa", header: "Empresa" },
               { key: "nombre", header: "Nombre" },
-              { key: "descripcion", header: "Descripcion" },
+              { key: "descripcion", header: "DescripciÃ³n" },
               {
                 key: "activa",
                 header: "Estado",
@@ -3764,7 +3764,7 @@ function CuadrillaModal({
             maxLength={100}
           />
         </Field>
-        <Field label="Descripcion">
+        <Field label="DescripciÃ³n">
           <TextareaInput
             name="descripcion"
             defaultValue={cuadrilla?.descripcion ?? ""}
@@ -4417,7 +4417,7 @@ export function NotificacionesPage() {
         actions={() =>
           hasRole("Administrador", "Oficina") ? (
             <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setOpen(true)}>
-              Nueva notificacion
+              Nueva notificaciÃ³n
             </Button>
           ) : null
         }
@@ -4474,7 +4474,7 @@ function NotificacionModal({
         destinatario: requiredValue(form.get("destinatario")),
         mensaje: requiredValue(form.get("mensaje")),
       });
-      toast.success("Notificacion creada.");
+      toast.success("NotificaciÃ³n creada.");
       onClose();
       onSaved();
     } catch (error) {
@@ -4485,7 +4485,7 @@ function NotificacionModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Nueva notificacion" size="lg">
+    <Modal open={open} onClose={onClose} title="Nueva notificaciÃ³n" size="lg">
       <form className="grid gap-4" onSubmit={submit}>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Usuario">
@@ -4614,11 +4614,11 @@ export function TrazabilidadPage() {
                 placeholder="Entidad"
               />
             </Field>
-            <Field label="Accion">
+            <Field label="AcciÃ³n">
               <TextInput
                 value={accionFilter}
                 onChange={(event) => setAccionFilter(event.target.value)}
-                placeholder="Accion"
+                placeholder="AcciÃ³n"
               />
             </Field>
             <Field label="Usuario">
@@ -4671,7 +4671,7 @@ export function TrazabilidadPage() {
         columns={[
           { key: "fecha", header: "Fecha", render: (row) => formatDateTime(row.fecha) },
           { key: "usuario", header: "Usuario" },
-          { key: "accion", header: "Accion" },
+          { key: "accion", header: "AcciÃ³n" },
           { key: "entidad", header: "Entidad" },
           { key: "idRegistroAfectado", header: "Registro" },
         ]}

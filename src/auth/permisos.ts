@@ -1,7 +1,7 @@
-import type { RolNombre } from "@/types";
+﻿import type { RolNombre } from "@/types";
 
 /**
- * Catalogo de modulos navegables del frontend.
+ * Catálogo de módulos navegables del frontend.
  * Debe mantenerse alineado con AppLayout y las rutas protegidas.
  */
 export type ModuloKey =
@@ -59,7 +59,7 @@ export const permisosPorRol: Record<RolNombre, ModuloKey[]> = {
 };
 
 /**
- * Helper pequeno para decidir si una pantalla o accion debe mostrarse.
+ * Helper pequeÃ±o para decidir si una pantalla o acciÃ³n debe mostrarse.
  */
 export function puedeVer(rol: string | undefined, modulo: ModuloKey): boolean {
   if (!rol) return false;

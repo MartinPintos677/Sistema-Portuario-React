@@ -21,19 +21,19 @@ const demoAccounts = [
     role: "Oficina",
     email: "oficina.demo@sistema-portuario.local",
     description:
-      "Gestion administrativa y operativa: clientes, ordenes, tareas, estiba, maquinaria y notificaciones.",
+      "Gestión administrativa y operativa: clientes, órdenes, tareas, estiba, maquinaria y notificaciones.",
   },
   {
     role: "Encargado",
     email: "encargado.demo@sistema-portuario.local",
     description:
-      "Coordinacion operativa: ordenes, asignaciones, mantenimiento, estiba, clientes y seguimiento diario.",
+      "Coordinación operativa: órdenes, asignaciones, mantenimiento, estiba, clientes y seguimiento diario.",
   },
   {
     role: "Operario",
     email: "operario.demo@sistema-portuario.local",
     description:
-      "Acceso operativo limitado: dashboard, ordenes asignadas, finalizacion de trabajos y notificaciones.",
+      "Acceso operativo limitado: dashboard, órdenes asignadas, finalización de trabajos y notificaciones.",
   },
 ];
 
@@ -92,7 +92,7 @@ export function LoginPage() {
               Bienvenidos al demo de un sistema portuario
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Podes elegir un rol para precargar correo y contraseña. Luego presiona Ingresar para
+              Podés elegir un rol para precargar correo y contraseña. Luego presiona Ingresar para
               acceder y recorrer el sistema con esos permisos.
             </p>
           </div>
@@ -149,7 +149,7 @@ export function LoginPage() {
               autoFocus
             />
           </Field>
-          <Field label="Contrasena" required>
+          <Field label="Contraseña" required>
             <TextInput
               type="password"
               value={password}

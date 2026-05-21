@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 
 // Mapa visual de estados comunes del dominio.
 // Normaliza espacios para aceptar valores como "En proceso" o "EnProceso".
@@ -21,8 +21,8 @@ const map: Record<string, string> = {
 };
 
 /**
- * Badge de estado reutilizable.
- * Usa el texto recibido como fallback para elegir color sin exigir logica extra.
+ * Badge de estado reútilizable.
+ * Usa el texto recibido como fallback para elegir color sin exigir lógica extra.
  */
 export function StatusBadge({ children, variant }: { children: ReactNode; variant?: string }) {
   const raw = (variant ?? String(children)).toLowerCase();

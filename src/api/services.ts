@@ -1,4 +1,4 @@
-import apiClient from "./client";
+﻿import apiClient from "./client";
 import type {
   PagedResponse,
   LoginResponse,
@@ -32,13 +32,13 @@ import type {
 /**
  * Capa de servicios del frontend.
  *
- * Agrupa llamadas por modulo y mantiene a las pantallas aisladas de las rutas
+ * Agrupa llamadas por módulo y mantiene a las pantallas aisladas de las rutas
  * HTTP concretas. Cada metodo devuelve datos de dominio en vez de respuestas
  * Axios completas.
  */
 type Page = { pageNumber?: number; pageSize?: number };
 
-// Normaliza parametros de paginacion antes de enviarlos a la API.
+// Normaliza parámetros de páginacion antes de enviarlos a la API.
 const params = (p?: Page) => ({
   pageNumber: p?.pageNumber ?? 1,
   pageSize: Math.min(p?.pageSize ?? 20, 100),

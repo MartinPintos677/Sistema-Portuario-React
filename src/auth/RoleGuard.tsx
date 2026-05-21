@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 /**
  * Oculta partes de una pantalla cuando el rol actual no esta autorizado.
- * Se usa para acciones puntuales dentro de modulos compartidos.
+ * Se usa para acciónes puntuales dentro de mÃ³dulos compartidos.
  */
 export function RoleGuard({
   roles,

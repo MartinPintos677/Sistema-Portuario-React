@@ -28,8 +28,8 @@ interface DashboardData {
 
 /**
  * Resumen operativo inicial.
- * Carga solo los modulos permitidos para el rol actual y tolera fallas parciales
- * para que una API secundaria no deje inutilizable todo el dashboard.
+ * Carga solo los módulos permitidos para el rol actual y tolera fallas parciales
+ * para que una API secundaria no deje inútilizable todo el dashboard.
  */
 export function DashboardPage() {
   const { usuario } = useAuth();
@@ -64,7 +64,7 @@ export function DashboardPage() {
       const tarItems = tar.status === "fulfilled" ? tar.value.items : [];
       const lower = (s?: string) => (s ?? "").toLowerCase();
       const warnings = [
-        canOrdenes && ord.status === "rejected" ? "No se pudo cargar ordenes." : "",
+        canOrdenes && ord.status === "rejected" ? "No se pudo cargar órdenes." : "",
         canMaquinaria && maq.status === "rejected" ? "No se pudo cargar maquinaria." : "",
         canMantenimiento && mant.status === "rejected" ? "No se pudo cargar mantenimientos." : "",
         canEstiba && cit.status === "rejected" ? "No se pudo cargar citaciones." : "",
@@ -76,14 +76,14 @@ export function DashboardPage() {
           [
             canOrdenes
               ? {
-                  label: "Ordenes pendientes",
+                  label: "Órdenes pendientes",
                   value: ordItems.filter((o) => lower(o.estadoOrden).includes("pend")).length,
                   tone: "warning",
                 }
               : null,
             canOrdenes
               ? {
-                  label: "Ordenes validadas",
+                  label: "Órdenes validadas",
                   value: ordItems.filter((o) => lower(o.estadoOrden).includes("valid")).length,
                   tone: "success",
                 }
@@ -105,7 +105,7 @@ export function DashboardPage() {
               : null,
             canEstiba
               ? {
-                  label: "Citaciones proximas",
+                  label: "Citaciones próximas",
                   value: citItems.filter((c) => new Date(c.fecha) >= new Date()).length,
                   tone: "info",
                 }
@@ -172,11 +172,11 @@ export function DashboardPage() {
             {canOrdenesView && (
               <section className="rounded-lg border border-border bg-card shadow-sm">
                 <div className="border-b border-border px-4 py-3">
-                  <h2 className="text-sm font-semibold text-foreground">Ordenes recientes</h2>
+                  <h2 className="text-sm font-semibold text-foreground">Órdenes recientes</h2>
                 </div>
                 <div className="divide-y divide-border">
                   {data.ordenes.length === 0 ? (
-                    <EmptyLine text="No hay ordenes para mostrar." />
+                    <EmptyLine text="No hay órdenes para mostrar." />
                   ) : (
                     data.ordenes.map((orden) => (
                       <div

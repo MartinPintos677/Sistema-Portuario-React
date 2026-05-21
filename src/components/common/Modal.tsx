@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
 
 /**
  * Modal base del sistema.
- * Maneja cierre por Escape, bloqueo de scroll y estructura comun para titulos,
+ * Maneja cierre por Escape, bloqueo de scroll y estructura comun para títulos,
  * contenido y pie de acciones.
  */
 interface ModalProps {

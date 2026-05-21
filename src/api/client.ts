@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+﻿import axios, { AxiosError } from "axios";
 import apiConfig from "@/config/apiConfig";
 import type { LoginResponse, ProblemDetails } from "@/types";
 
@@ -36,7 +36,7 @@ export const setUnauthorizedHandler = (fn: (reason?: string) => void) => {
 
 let refreshing: Promise<string | null> | null = null;
 
-// Los endpoints de auth no deben disparar refresh ni retry automatico.
+// Los endpoints de auth no deben disparar refresh ni retry automático.
 function isAuthEndpoint(url?: string) {
   return Boolean(
     url?.includes("/Auth/login") ||
@@ -47,7 +47,7 @@ function isAuthEndpoint(url?: string) {
 
 /**
  * Renueva el access token con el refresh token local.
- * La promesa compartida evita multiples renovaciones simultaneas.
+ * La promesa compartida evita múltiples renovacíones simultáneas.
  */
 async function refreshAccessToken() {
   if (typeof window === "undefined") return null;
@@ -98,13 +98,13 @@ apiClient.interceptors.response.use(
 
 /**
  * Convierte errores del backend en mensajes legibles para las pantallas.
- * Soporta ProblemDetails, errores de validacion y fallas de conexion.
+ * Soporta ProblemDetails, errores de validación y fallas de conexión.
  */
 export function extractErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as ProblemDetails | undefined;
     if (error.response?.status === 401 && isAuthEndpoint(error.config?.url)) {
-      return "Correo o contrasena incorrectos.";
+      return "Correo o contraseña incorrectos.";
     }
     if (data) {
       if (data.detail) return data.title ? `${data.title}: ${data.detail}` : data.detail;
@@ -113,14 +113,14 @@ export function extractErrorMessage(error: unknown): string {
         return Object.values(data.errors).flat().join(" - ");
       }
     }
-    if (error.response?.status === 401) return "Tu sesion expiro. Inicia sesion nuevamente.";
-    if (error.response?.status === 403) return "No tienes permisos para realizar esta accion.";
+    if (error.response?.status === 401) return "Tu sesión expiró. Inicia sesión nuevamente.";
+    if (error.response?.status === 403) return "No tienes permisos para realizar esta acción.";
     if (error.message === "Network Error") {
-      return "No se pudo conectar con el backend. Verifica que la API este iniciada.";
+      return "No se pudo conectar con el backend. Verifica que la API esté iniciada.";
     }
-    return "No fue posible completar la operacion.";
+    return "No fue posible completar la operación.";
   }
-  return "Ocurrio un error inesperado.";
+  return "Ocurrió un error inesperado.";
 }
 
 export default apiClient;

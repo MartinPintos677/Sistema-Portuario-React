@@ -5,9 +5,9 @@ import { Button } from "./Button";
 import type { PagedResponse } from "@/types";
 
 /**
- * Tabla generica usada por los modulos CRUD.
- * Acepta datos paginados de la API o filas filtradas localmente, manteniendo
- * estados consistentes de carga, error, vacio y paginacion.
+ * Tabla genérica usada por los módulos CRUD.
+ * Acepta datos páginados de la API o filas filtradas localmente, manteniendo
+ * estados consistentes de carga, error, vacío y páginación.
  */
 export interface Column<T> {
   key: string;
@@ -119,12 +119,12 @@ export function DataTable<T>({
       {data && (
         <div className="flex flex-col items-center justify-between gap-2 border-t border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground sm:flex-row">
           <div>
-            Pagina <strong className="text-foreground">{currentPage}</strong> de{" "}
+            Página <strong className="text-foreground">{currentPage}</strong> de{" "}
             <strong className="text-foreground">{totalPages}</strong> -{" "}
             {isFiltered ? (
               <>
                 <strong className="text-foreground">{items.length}</strong> visibles de{" "}
-                {data.items.length} en esta pagina - {data.totalCount} registros totales
+                {data.items.length} en esta página - {data.totalCount} registros totales
               </>
             ) : (
               <>{data.totalCount} registros</>

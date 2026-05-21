@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "@/api/client";
 import type { PagedResponse } from "@/types";
 import apiConfig from "@/config/apiConfig";
 
 /**
- * Hook reusable para listados paginados.
- * Centraliza loading, error, pagina actual y recarga para que los modulos
+ * Hook reusable para listados páginados.
+ * Centraliza loading, error, pÃ¡gina actual y recarga para que los mÃ³dulos
  * mantengan el mismo comportamiento en tablas.
  */
 export function usePagedQuery<T>(

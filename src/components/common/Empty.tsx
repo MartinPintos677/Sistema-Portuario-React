@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 
 /**
- * Estado vacio generico.
- * Se usa cuando una tabla o modulo no tiene registros disponibles para mostrar.
+ * Estado vacío generico.
+ * Se usa cuando una tabla o módulo no tiene registros disponibles para mostrar.
  */
 export function Empty({
   title = "Sin datos",

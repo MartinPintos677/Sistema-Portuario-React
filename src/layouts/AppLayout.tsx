@@ -31,16 +31,16 @@ interface NavItem {
 
 /**
  * Navegacion principal del sistema.
- * Cada item declara el modulo requerido para poder filtrar el menu por rol.
+ * Cada item declara el módulo requerido para poder filtrar el menu por rol.
  */
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", modulo: "dashboard", icon: LayoutDashboard },
-  { to: "/ordenes", label: "Ordenes de servicio", modulo: "ordenes", icon: ClipboardList },
+  { to: "/ordenes", label: "Órdenes de servicio", modulo: "ordenes", icon: ClipboardList },
   { to: "/maquinarias", label: "Maquinaria", modulo: "maquinarias", icon: Gauge },
   { to: "/mantenimientos", label: "Mantenimiento", modulo: "mantenimiento", icon: Settings },
   { to: "/clientes", label: "Clientes", modulo: "clientes", icon: Users },
   { to: "/estiba", label: "Estiba", modulo: "estiba", icon: PackageCheck },
-  { to: "/administracion", label: "Administracion", modulo: "administracion", icon: CalendarCheck },
+  { to: "/administracion", label: "Administración", modulo: "administracion", icon: CalendarCheck },
   { to: "/notificaciones", label: "Notificaciones", modulo: "notificaciones", icon: Bell },
   { to: "/usuarios", label: "Usuarios", modulo: "usuarios", icon: UserCog },
   { to: "/empresas", label: "Datos Empresas", modulo: "empresas", icon: Building2 },
@@ -48,7 +48,7 @@ const NAV: NavItem[] = [
 ];
 
 /**
- * Layout privado de la aplicacion.
+ * Layout privado de la aplicación.
  * Renderiza sidebar, header de usuario y el contenido de la ruta activa.
  */
 export function AppLayout() {
@@ -132,7 +132,7 @@ export function AppLayout() {
 }
 
 /**
- * Encabezado de marca reutilizado en sidebar desktop y menu mobile.
+ * Encabezado de marca reútilizado en sidebar desktop y menu mobile.
  */
 function Brand({ onClose }: { onClose?: () => void }) {
   return (

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+﻿import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import apiConfig from "@/config/apiConfig";
 import { authApi } from "@/api/services";
@@ -6,12 +6,12 @@ import { setUnauthorizedHandler } from "@/api/client";
 import type { Usuario } from "@/types";
 
 /**
- * Contrato publico del modulo de autenticacion.
+ * Contrato publico del módulo de autenticación.
  *
- * Este contexto centraliza todo lo que la UI necesita saber sobre la sesion:
- * usuario actual, token JWT, estado de carga inicial, mensajes de sesion y
- * acciones de login/logout. Tambien expone `hasRole` para proteger vistas y
- * acciones segun el rol recibido desde el backend.
+ * Este contexto centraliza todo lo que la UI necesita saber sobre la sesiÃ³n:
+ * usuario actual, token JWT, estado de carga inicial, mensajes de sesiÃ³n y
+ * acciónes de login/logout. TambiÃ©n expone `hasRole` para proteger vistas y
+ * acciónes segÃºn el rol recibido desde el backend.
  */
 interface AuthState {
   usuario: Usuario | null;
@@ -27,12 +27,12 @@ interface AuthState {
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 /**
- * Proveedor global de autenticacion.
+ * Proveedor global de autenticación.
  *
  * Responsabilidades principales:
- * - Restaurar la sesion desde localStorage al cargar la aplicacion.
+ * - Restaurar la sesiÃ³n desde localStorage al cargar la aplicaciÃ³n.
  * - Guardar tokens y usuario luego de un login exitoso.
- * - Limpiar la sesion local al cerrar sesion o cuando la API devuelve 401.
+ * - Limpiar la sesiÃ³n local al cerrar sesiÃ³n o cuando la API devuelve 401.
  * - Mantener una API simple para que el resto del frontend no conozca detalles
  *   de almacenamiento, refresh token o estructura de respuesta del backend.
  */
@@ -43,10 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionMessage, setSessionMessage] = useState<string | null>(null);
 
   /**
-   * Restauracion inicial de sesion.
+   * RestauraciÃ³n inicial de sesiÃ³n.
    *
    * El frontend guarda el JWT y el usuario serializado en localStorage para que
-   * el usuario no tenga que iniciar sesion en cada refresh del navegador. Si el
+   * el usuario no tenga que iniciar sesiÃ³n en cada refresh del navegador. Si el
    * JSON guardado esta corrupto o incompleto, se ignora y se continua como
    * usuario no autenticado.
    */
@@ -65,9 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Limpia todos los datos de sesion del cliente.
+   * Limpia todos los datos de sesiÃ³n del cliente.
    *
-   * Se usa tanto para logout manual como para expiracion de sesion detectada
+   * Se usa tanto para logout manual como para expiraciÃ³n de sesiÃ³n detectada
    * por el interceptor HTTP. El mensaje opcional permite informar al usuario
    * por que fue enviado nuevamente al login.
    */
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Cierre de sesion del usuario.
+   * Cierre de sesiÃ³n del usuario.
    *
    * Se intenta notificar al backend para invalidar el refresh token, pero el
    * cierre local no depende de esa llamada. Esto evita dejar al usuario atrapado
@@ -100,22 +100,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Integracion con el cliente HTTP.
    *
    * `apiClient` llama a este handler cuando una peticion autenticada recibe 401
-   * y no se puede renovar el token. Desde aca se borra la sesion y se muestra un
+   * y no se puede renovar el token. Desde acÃ¡ se borra la sesiÃ³n y se muestra un
    * mensaje claro en la pantalla de login.
    */
   useEffect(() => {
     setUnauthorizedHandler((reason) =>
       clearLocalSession(
-        reason === "session-expired" ? "Tu sesion expiro. Inicia sesion nuevamente." : undefined,
+        reason === "session-expired" ? "Tu sesiÃ³n expirÃ³. Inicia sesiÃ³n nuevamente." : undefined,
       ),
     );
   }, [clearLocalSession]);
 
   /**
-   * Inicia sesion contra la API y persiste la respuesta.
+   * Inicia sesiÃ³n contra la API y persiste la respuesta.
    *
    * El backend devuelve access token, refresh token, fecha de expiracion y datos
-   * del usuario. El contexto guarda esa informacion en memoria para renderizar
+   * del usuario. El contexto guarda esa información en memoria para renderizar
    * la UI inmediatamente, y en localStorage para restaurarla al recargar.
    */
   const login = useCallback(async (correo: string, password: string) => {
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * Helper de autorizacion para componentes y rutas.
    *
-   * Ejemplo: `hasRole("Administrador", "Oficina")` permite mostrar acciones
+   * Ejemplo: `hasRole("Administrador", "Oficina")` permite mostrar acciónes
    * solo a usuarios con alguno de esos roles.
    */
   const hasRole = useCallback(
@@ -158,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * Hook de acceso al contexto de autenticacion.
+ * Hook de acceso al contexto de autenticación.
  *
  * Lanza un error explicito si se usa fuera de `AuthProvider`, lo que ayuda a
  * detectar errores de configuracion durante desarrollo.

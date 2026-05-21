@@ -20,7 +20,7 @@ import {
 } from "@/pages/modules";
 
 /**
- * Decide la primera pantalla segun el estado de sesion restaurado.
+ * Decide la primera pantalla según el estado de sesión restaurado.
  * Mientras AuthProvider lee localStorage evita redirecciones prematuras.
  */
 function RootRedirect() {
@@ -34,7 +34,7 @@ function RootRedirect() {
  * Punto de entrada de la SPA.
  *
  * Reune providers globales y define el mapa de rutas. Las pantallas internas
- * quedan bajo autenticacion y, cuando corresponde, bajo validacion de rol.
+ * quedan bajo autenticación y, cuando corresponde, bajo validación de rol.
  */
 export default function App() {
   return (

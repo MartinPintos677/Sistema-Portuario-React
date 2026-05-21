@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+﻿import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "outline" | "success";
 type Size = "sm" | "md" | "lg";
@@ -20,7 +20,7 @@ const sizes: Record<Size, string> = {
 
 /**
  * Boton base de la interfaz.
- * Unifica variantes visuales, tamanos, iconos y estado de carga.
+ * Unifica variantes visuales, tamaños, iconos y estado de carga.
  */
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
