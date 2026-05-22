@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 
 /**
  * Oculta partes de una pantalla cuando el rol actual no esta autorizado.
- * Se usa para acciónes puntuales dentro de mÃ³dulos compartidos.
+ * Se usa para acciones puntuales dentro de módulos compartidos.
  */
 export function RoleGuard({
   roles,

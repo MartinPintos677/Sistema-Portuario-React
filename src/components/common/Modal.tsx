@@ -59,9 +59,11 @@ export function Modal({
         className={`relative flex max-h-[90vh] w-full ${sizes[size]} flex-col rounded-t-xl border border-border bg-card shadow-2xl sm:rounded-xl`}
       >
         {(title || description) && (
-          <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
+          <div className="flex min-h-14 items-center justify-between gap-4 border-b border-border px-5 py-3">
             <div className="min-w-0">
-              {title && <h2 className="text-base font-semibold text-foreground">{title}</h2>}
+              {title && (
+                <h2 className="text-base leading-6 font-semibold text-foreground">{title}</h2>
+              )}
               {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
             </div>
             <button

@@ -27,6 +27,7 @@ import type {
   CitacionEstiba,
   Cliente,
   Cuadrilla,
+  DetalleCitacion,
   Empresa,
   EstadoCitacion,
   EstadoMantenimiento,
@@ -60,9 +61,11 @@ type PageParams = { pageNumber: number; pageSize: number };
 type OnSaved = () => void;
 type FormErrors = Record<string, string>;
 
+const ADMIN_DEMO_EMAIL = "admin.demo@sistema-portuario.local";
+
 /**
- * Contenedor estándar para listados páginados.
- * Se encarga de header, filtros, tabla, acciónes por fila y recarga.
+ * Contenedor estándar para listados paginados.
+ * Se encarga de header, filtros, tabla, acciones por fila y recarga.
  */
 function ModuleShell<T>({
   title,
@@ -638,12 +641,13 @@ export function UsuariosPage() {
   const [editing, setEditing] = useState<Usuario | null>(null);
   const [open, setOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const isProtectedAdmin = (usuario: Usuario) => usuario.correo.toLowerCase() === ADMIN_DEMO_EMAIL;
 
   return (
     <>
       <ModuleShell<Usuario>
         title="Usuarios"
-        description="GestiÃ³n de usuarios del sistema"
+        description="Gestión de usuarios del sistema"
         fetcher={(p) => usuariosApi.list(p)}
         rowKey={(r) => r.idUsuario}
         deps={[refreshKey]}
@@ -672,29 +676,31 @@ export function UsuariosPage() {
             >
               Editar
             </Button>
-            <Button
-              size="sm"
-              variant={row.activo ? "danger" : "success"}
-              icon={<Power className="h-4 w-4" />}
-              onClick={async () => {
-                if (
-                  !confirm(
-                    `Seguro que queres ${row.activo ? "desactivar" : "activar"} este usuario?`,
-                  )
-                ) {
-                  return;
-                }
-                try {
-                  await usuariosApi.setActivo(row.idUsuario, !row.activo);
-                  toast.success("Estado del usuario actualizado.");
-                  await reload();
-                } catch (error) {
-                  toast.error(extractErrorMessage(error));
-                }
-              }}
-            >
-              {row.activo ? "Desactivar" : "Activar"}
-            </Button>
+            {!isProtectedAdmin(row) && (
+              <Button
+                size="sm"
+                variant={row.activo ? "danger" : "success"}
+                icon={<Power className="h-4 w-4" />}
+                onClick={async () => {
+                  if (
+                    !confirm(
+                      `¿Seguro que querés ${row.activo ? "desactivar" : "activar"} este usuario?`,
+                    )
+                  ) {
+                    return;
+                  }
+                  try {
+                    await usuariosApi.setActivo(row.idUsuario, !row.activo);
+                    toast.success("Estado del usuario actualizado.");
+                    await reload();
+                  } catch (error) {
+                    toast.error(extractErrorMessage(error));
+                  }
+                }}
+              >
+                {row.activo ? "Desactivar" : "Activar"}
+              </Button>
+            )}
           </EntityActions>
         )}
         columns={[
@@ -760,10 +766,14 @@ function UsuarioFormModal({
     if (!usuario) {
       validateRequired(errors, "password", form.get("password"));
       validateMinLength(errors, "password", form.get("password"), 6);
+    } else if (formValue(form.get("password"))) {
+      validateMinLength(errors, "password", form.get("password"), 6);
     }
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
+    const password = formValue(form.get("password"));
+    const isProtectedAdmin = usuario?.correo.toLowerCase() === ADMIN_DEMO_EMAIL;
     const basePayload = {
       idEmpresa: Number(requiredValue(form.get("idEmpresa"))),
       idRol: Number(requiredValue(form.get("idRol"))),
@@ -772,7 +782,8 @@ function UsuarioFormModal({
       apellido: requiredValue(form.get("apellido")),
       correo: requiredValue(form.get("correo")),
       telefono: formValue(form.get("telefono")),
-      activo: boolValue(form.get("activo")),
+      activo: isProtectedAdmin ? true : boolValue(form.get("activo")),
+      ...(password ? { password } : {}),
     };
 
     setSaving(true);
@@ -835,7 +846,7 @@ function UsuarioFormModal({
           </Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Cedula" required error={formErrors.cedula}>
+          <Field label="Cédula" required error={formErrors.cedula}>
             <TextInput name="cedula" defaultValue={usuario?.cedula ?? ""} required maxLength={30} />
           </Field>
           <Field label="Nombre" required error={formErrors.nombre}>
@@ -865,21 +876,27 @@ function UsuarioFormModal({
               maxLength={180}
             />
           </Field>
-          <Field label="Telefono">
+          <Field label="Teléfono">
             <TextInput name="telefono" defaultValue={usuario?.telefono ?? ""} maxLength={50} />
           </Field>
         </div>
-        {!usuario && (
-          <Field
-            label="ContraseÃ±a"
-            required
-            hint="Minimo 6 caracteres."
-            error={formErrors.password}
-          >
-            <TextInput name="password" type="password" required minLength={6} maxLength={100} />
-          </Field>
-        )}
-        {usuario && (
+        <Field
+          label={usuario ? "Nueva contraseña" : "Contraseña"}
+          required={!usuario}
+          hint={
+            usuario ? "Dejar en blanco para mantener la contraseña actual." : "Mínimo 6 caracteres."
+          }
+          error={formErrors.password}
+        >
+          <TextInput
+            name="password"
+            type="password"
+            required={!usuario}
+            minLength={6}
+            maxLength={100}
+          />
+        </Field>
+        {usuario && usuario.correo.toLowerCase() !== ADMIN_DEMO_EMAIL && (
           <Field label="Estado">
             <SelectInput name="activo" defaultValue={usuario.activo ? "true" : "false"}>
               <option value="true">Activo</option>
@@ -1164,13 +1181,13 @@ export function OrdenesPage() {
   return (
     <>
       <ModuleShell<OrdenServicio>
-        title="Ã“rdenes de servicio"
+        title="Órdenes de servicio"
         description={
           isOperario
-            ? "Consulta de Ã³rdenes asignadas, registro de horas y finalizaciÃ³n"
+            ? "Consulta de Órdenes asignadas, registro de horas y finalización"
             : isOficina
-              ? "Consulta de Ã³rdenes y registro de facturaciÃ³n"
-              : "Alta, seguimiento, finalizaciÃ³n y facturaciÃ³n"
+              ? "Consulta de órdenes y registro de facturación"
+              : "Alta, seguimiento, finalización y facturación"
         }
         fetcher={(p) => ordenesApi.list(p)}
         rowKey={(r) => r.idOrdenServicio}
@@ -1835,7 +1852,7 @@ function FinalizarOrdenModal({
   return (
     <Modal open={!!orden} onClose={onClose} title="Finalizar orden">
       <form className="grid gap-4" onSubmit={submit}>
-        <Field label="Hora de finalizaciÃ³n" required>
+        <Field label="Hora de finalización" required>
           <TextInput
             name="horaFinalizacion"
             type="datetime-local"
@@ -1925,7 +1942,7 @@ function RegistroHorasOrdenModal({
         <Field label="Horas trabajadas" required error={formErrors.horasTrabajadas}>
           <TextInput name="horasTrabajadas" type="number" step="0.01" min="0.01" required />
         </Field>
-        <Field label="ObservaciÃ³n">
+        <Field label="Observación">
           <TextareaInput name="observacion" maxLength={500} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -1977,7 +1994,7 @@ function FacturacionOrdenModal({
   };
 
   return (
-    <Modal open={!!orden} onClose={onClose} title="Registrar facturaciÃ³n">
+    <Modal open={!!orden} onClose={onClose} title="Registrar facturación">
       <form className="grid gap-4" onSubmit={submit}>
         <Field label="Fecha envio">
           <TextInput
@@ -2035,7 +2052,7 @@ export function MaquinariasPage() {
               <TextInput
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="CÃ³digo o nombre"
+                placeholder="Código o nombre"
               />
             </Field>
             <Field label="Tipo">
@@ -2131,7 +2148,7 @@ export function MaquinariasPage() {
           </EntityActions>
         )}
         columns={[
-          { key: "codigo", header: "CÃ³digo" },
+          { key: "codigo", header: "Código" },
           { key: "nombre", header: "Nombre" },
           { key: "tipoMaquinaria", header: "Tipo" },
           { key: "marca", header: "Marca" },
@@ -2272,7 +2289,7 @@ function MaquinariaFormModal({
           </Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="CÃ³digo" required error={formErrors.codigo}>
+          <Field label="Código" required error={formErrors.codigo}>
             <TextInput
               name="codigo"
               defaultValue={maquinaria?.codigo ?? ""}
@@ -2296,7 +2313,7 @@ function MaquinariaFormModal({
           <Field label="Modelo">
             <TextInput name="modelo" defaultValue={maquinaria?.modelo ?? ""} maxLength={100} />
           </Field>
-          <Field label="MatrÃ­cula">
+          <Field label="Matrícula">
             <TextInput name="matricula" defaultValue={maquinaria?.matricula ?? ""} maxLength={80} />
           </Field>
         </div>
@@ -2381,7 +2398,7 @@ function HistorialHorasModal({
           { key: "horasTrabajadas", header: "Horas" },
           {
             key: "observacion",
-            header: "ObservaciÃ³n",
+            header: "Observación",
             render: (row) => row.observacion ?? "-",
           },
         ]}
@@ -2391,7 +2408,7 @@ function HistorialHorasModal({
         rowKey={(row) => row.idRegistroHoras ?? `${row.fecha}-${row.horasTrabajadas}`}
         pageNumber={pageNumber}
         onPageChange={setPageNumber}
-        emptyText="TodavÃ­a no hay registros de horas para esta maquinaria."
+        emptyText="Todavía no hay registros de horas para esta maquinaria."
       />
     </Modal>
   );
@@ -2483,7 +2500,7 @@ function RegistroHorasModal({
             ))}
           </SelectInput>
         </Field>
-        <Field label="ObservaciÃ³n">
+        <Field label="Observación">
           <TextareaInput name="observacion" maxLength={500} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -2533,7 +2550,7 @@ export function MantenimientosPage() {
               <TextInput
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Maquinaria o descripciÃ³n"
+                placeholder="Maquinaria o descripción"
               />
             </Field>
             <Field label="Estado">
@@ -2836,7 +2853,7 @@ function MantenimientoFormModal({
             />
           </Field>
         </div>
-        <Field label="DescripciÃ³n" required>
+        <Field label="Descripción" required>
           <TextareaInput
             name="descripcion"
             defaultValue={mantenimiento?.descripcion ?? ""}
@@ -2905,7 +2922,7 @@ function TipoMantenimientoModal({
         <Field label="Umbral horas">
           <TextInput name="umbralHoras" type="number" step="0.01" />
         </Field>
-        <Field label="DescripciÃ³n">
+        <Field label="Descripción">
           <TextareaInput name="descripcion" maxLength={500} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -3161,7 +3178,7 @@ function TareaFormModal({
             defaultValue={toDateTimeInput(tarea?.fechaVencimiento)}
           />
         </Field>
-        <Field label="DescripciÃ³n">
+        <Field label="Descripción">
           <TextareaInput
             name="descripcion"
             defaultValue={tarea?.descripcion ?? ""}
@@ -3253,7 +3270,7 @@ function EventoFormModal({
             <TextInput name="tipoEvento" required maxLength={80} />
           </Field>
         </div>
-        <Field label="DescripciÃ³n">
+        <Field label="Descripción">
           <TextareaInput name="descripcion" maxLength={1000} />
         </Field>
         <div className="flex justify-end gap-2">
@@ -3374,7 +3391,7 @@ export function EstibaPage() {
                 setOpenCitacion(true);
               }}
             >
-              Nueva citacion
+              Nueva citación
             </Button>
             {canManageEstibaCatalogs && (
               <>
@@ -3501,7 +3518,7 @@ export function EstibaPage() {
             columns={[
               { key: "empresa", header: "Empresa" },
               { key: "nombre", header: "Nombre" },
-              { key: "descripcion", header: "DescripciÃ³n" },
+              { key: "descripcion", header: "Descripción" },
               {
                 key: "activa",
                 header: "Estado",
@@ -3764,7 +3781,7 @@ function CuadrillaModal({
             maxLength={100}
           />
         </Field>
-        <Field label="DescripciÃ³n">
+        <Field label="Descripción">
           <TextareaInput
             name="descripcion"
             defaultValue={cuadrilla?.descripcion ?? ""}
@@ -3990,7 +4007,7 @@ function CitacionModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={citacion ? "Editar citacion" : "Nueva citacion"}
+      title={citacion ? "Editar citación" : "Nueva citación"}
       size="lg"
     >
       <form className="grid gap-4" onSubmit={submit}>
@@ -4097,19 +4114,31 @@ function DetalleCitacionModal({
   const [saving, setSaving] = useState(false);
   const [personal, setPersonal] = useState<PersonalEstiba[]>([]);
   const [cuadrillas, setCuadrillas] = useState<Cuadrilla[]>([]);
+  const [detalles, setDetalles] = useState<DetalleCitacion[]>([]);
+  const personalAsignadoIds = new Set(detalles.map((detalle) => detalle.idPersonalEstiba));
   const personalOptions = citacion?.idEmpresa
-    ? personal.filter((item) => item.idEmpresa === citacion.idEmpresa && item.activo)
-    : personal.filter((item) => item.activo);
+    ? personal.filter(
+        (item) =>
+          item.idEmpresa === citacion.idEmpresa &&
+          item.activo &&
+          !personalAsignadoIds.has(item.idPersonalEstiba),
+      )
+    : personal.filter((item) => item.activo && !personalAsignadoIds.has(item.idPersonalEstiba));
   const cuadrillasOptions = citacion?.idEmpresa
     ? cuadrillas.filter((item) => item.idEmpresa === citacion.idEmpresa && item.activa)
     : cuadrillas.filter((item) => item.activa);
 
   useEffect(() => {
     if (!citacion) return;
-    Promise.all([estibaApi.personal({ pageSize: 100 }), estibaApi.cuadrillas({ pageSize: 100 })])
-      .then(([personalRes, cuadrillasRes]) => {
+    Promise.all([
+      estibaApi.personal({ pageSize: 100 }),
+      estibaApi.cuadrillas({ pageSize: 100 }),
+      estibaApi.detallesCitacion(citacion.idCitacion),
+    ])
+      .then(([personalRes, cuadrillasRes, detallesRes]) => {
         setPersonal(personalRes.items);
         setCuadrillas(cuadrillasRes.items);
+        setDetalles(detallesRes);
       })
       .catch((error) => toast.error(extractErrorMessage(error)));
   }, [citacion, toast]);
@@ -4121,14 +4150,14 @@ function DetalleCitacionModal({
     const idPersonalEstiba = requiredValue(form.get("idPersonalEstiba"));
     const idCuadrilla = formValue(form.get("idCuadrilla"));
     if (!personalOptions.some((item) => String(item.idPersonalEstiba) === idPersonalEstiba)) {
-      toast.error("Selecciona personal de la misma empresa que la citacion.");
+      toast.error("Selecciona personal disponible de la misma empresa que la citación.");
       return;
     }
     if (
       idCuadrilla &&
       !cuadrillasOptions.some((item) => String(item.idCuadrilla) === idCuadrilla)
     ) {
-      toast.error("Selecciona una cuadrilla de la misma empresa que la citacion.");
+      toast.error("Selecciona una cuadrilla de la misma empresa que la citación.");
       return;
     }
     setSaving(true);
@@ -4154,12 +4183,12 @@ function DetalleCitacionModal({
   };
 
   return (
-    <Modal open={!!citacion} onClose={onClose} title="Detalle de citacion" size="lg">
+    <Modal open={!!citacion} onClose={onClose} title="Detalle de citación" size="lg">
       <form className="grid gap-4" onSubmit={submit}>
         <Field label="Personal" required>
-          <SelectInput name="idPersonalEstiba" required>
+          <SelectInput name="idPersonalEstiba" required disabled={personalOptions.length === 0}>
             <option value="" disabled>
-              Seleccionar
+              {personalOptions.length === 0 ? "Sin personal disponible" : "Seleccionar"}
             </option>
             {personalOptions.map((item) => (
               <option key={item.idPersonalEstiba} value={item.idPersonalEstiba}>
@@ -4208,7 +4237,7 @@ function DetalleCitacionModal({
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit" loading={saving}>
+          <Button type="submit" loading={saving} disabled={personalOptions.length === 0}>
             Guardar
           </Button>
         </div>
@@ -4246,10 +4275,10 @@ function LiquidacionModal({
       };
       if (liquidacion?.idLiquidacion) {
         await estibaApi.updateLiquidacion(liquidacion.idLiquidacion, payload);
-        toast.success("Liquidacion actualizada.");
+        toast.success("Liquidación actualizada.");
       } else {
         await estibaApi.liquidaciones(payload);
-        toast.success("Liquidacion creada.");
+        toast.success("Liquidación creada.");
       }
       onClose();
       onSaved();
@@ -4263,7 +4292,7 @@ function LiquidacionModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={liquidacion ? "Editar liquidacion" : "Nueva liquidacion"}
+      title={liquidacion ? "Editar liquidación" : "Nueva liquidación"}
     >
       <form className="grid gap-4" onSubmit={submit}>
         <Field label="Empresa" required>
@@ -4417,7 +4446,7 @@ export function NotificacionesPage() {
         actions={() =>
           hasRole("Administrador", "Oficina") ? (
             <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => setOpen(true)}>
-              Nueva notificaciÃ³n
+              Nueva notificación
             </Button>
           ) : null
         }
@@ -4474,7 +4503,7 @@ function NotificacionModal({
         destinatario: requiredValue(form.get("destinatario")),
         mensaje: requiredValue(form.get("mensaje")),
       });
-      toast.success("NotificaciÃ³n creada.");
+      toast.success("Notificación creada.");
       onClose();
       onSaved();
     } catch (error) {
@@ -4485,7 +4514,7 @@ function NotificacionModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Nueva notificaciÃ³n" size="lg">
+    <Modal open={open} onClose={onClose} title="Nueva notificación" size="lg">
       <form className="grid gap-4" onSubmit={submit}>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Usuario">
@@ -4614,11 +4643,11 @@ export function TrazabilidadPage() {
                 placeholder="Entidad"
               />
             </Field>
-            <Field label="AcciÃ³n">
+            <Field label="Acción">
               <TextInput
                 value={accionFilter}
                 onChange={(event) => setAccionFilter(event.target.value)}
-                placeholder="AcciÃ³n"
+                placeholder="Acción"
               />
             </Field>
             <Field label="Usuario">
@@ -4671,7 +4700,7 @@ export function TrazabilidadPage() {
         columns={[
           { key: "fecha", header: "Fecha", render: (row) => formatDateTime(row.fecha) },
           { key: "usuario", header: "Usuario" },
-          { key: "accion", header: "AcciÃ³n" },
+          { key: "accion", header: "Acción" },
           { key: "entidad", header: "Entidad" },
           { key: "idRegistroAfectado", header: "Registro" },
         ]}

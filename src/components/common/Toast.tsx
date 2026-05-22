@@ -90,12 +90,12 @@ function ToastCard({ item, onClose }: { item: ToastItem; onClose: () => void }) 
   }, []);
   return (
     <div
-      className={`pointer-events-auto flex w-full max-w-xl items-start gap-3 rounded-lg border bg-card px-4 py-3 shadow-xl ring-1 ring-black/5 transition-all dark:bg-popover ${
+      className={`pointer-events-auto flex min-h-14 w-full max-w-xl items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-xl ring-1 ring-black/5 transition-all dark:bg-popover ${
         styles[item.variant]
       } ${visible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}`}
     >
       <span
-        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${iconStyles[item.variant]}`}
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${iconStyles[item.variant]}`}
       >
         {icons[item.variant]}
       </span>

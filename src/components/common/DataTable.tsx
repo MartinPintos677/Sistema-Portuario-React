@@ -6,8 +6,8 @@ import type { PagedResponse } from "@/types";
 
 /**
  * Tabla genérica usada por los módulos CRUD.
- * Acepta datos páginados de la API o filas filtradas localmente, manteniendo
- * estados consistentes de carga, error, vacío y páginación.
+ * Acepta datos paginados de la API o filas filtradas localmente, manteniendo
+ * estados consistentes de carga, error, vacío y paginación.
  */
 export interface Column<T> {
   key: string;

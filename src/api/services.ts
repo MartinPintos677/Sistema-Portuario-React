@@ -38,7 +38,7 @@ import type {
  */
 type Page = { pageNumber?: number; pageSize?: number };
 
-// Normaliza parámetros de páginacion antes de enviarlos a la API.
+// Normaliza parámetros de paginación antes de enviarlos a la API.
 const params = (p?: Page) => ({
   pageNumber: p?.pageNumber ?? 1,
   pageSize: Math.min(p?.pageSize ?? 20, 100),
@@ -61,11 +61,14 @@ export const usuariosApi = {
   list: (p?: Page) =>
     apiClient.get<PagedResponse<Usuario>>("/usuarios", { params: params(p) }).then((r) => r.data),
   get: (id: number) => apiClient.get<Usuario>(`/usuarios/${id}`).then((r) => r.data),
+  perfil: () => apiClient.get<Usuario>("/usuarios/perfil").then((r) => r.data),
   roles: () => apiClient.get<Rol[]>("/usuarios/roles").then((r) => r.data),
   create: (data: Partial<Usuario> & { password: string }) =>
     apiClient.post<Usuario>("/usuarios", data).then((r) => r.data),
-  update: (id: number, data: Partial<Usuario>) =>
+  update: (id: number, data: Partial<Usuario> & { password?: string }) =>
     apiClient.put<Usuario>(`/usuarios/${id}`, data).then((r) => r.data),
+  updatePerfil: (data: { telefono?: string; password?: string }) =>
+    apiClient.put<Usuario>("/usuarios/perfil", data).then((r) => r.data),
   setActivo: (id: number, activo: boolean) =>
     apiClient.patch(`/usuarios/${id}/activo`, activo).then((r) => r.data),
 };

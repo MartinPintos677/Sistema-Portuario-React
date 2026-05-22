@@ -4,7 +4,7 @@ import { useAuth } from "./AuthContext";
 
 /**
  * Guarda de autenticación para rutas privadas.
- * Si no hay sesiÃ³n vÃ¡lida, conserva la ruta pedida para volver luego del login.
+ * Si no hay sesión válida, conserva la ruta pedida para volver luego del login.
  */
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading } = useAuth();

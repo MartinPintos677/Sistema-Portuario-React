@@ -4,8 +4,8 @@ import type { PagedResponse } from "@/types";
 import apiConfig from "@/config/apiConfig";
 
 /**
- * Hook reusable para listados páginados.
- * Centraliza loading, error, pÃ¡gina actual y recarga para que los mÃ³dulos
+ * Hook reusable para listados paginados.
+ * Centraliza loading, error, página actual y recarga para que los módulos
  * mantengan el mismo comportamiento en tablas.
  */
 export function usePagedQuery<T>(

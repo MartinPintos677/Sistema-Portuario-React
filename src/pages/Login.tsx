@@ -15,25 +15,25 @@ const demoAccounts = [
     role: "Administrador",
     email: "admin.demo@sistema-portuario.local",
     description:
-      "Acceso completo: usuarios, empresas, datos maestros, operaciones, notificaciones y trazabilidad.",
+      "Acceso completo: Puede gestionar empresas, usuarios, clientes, maquinaria, órdenes de servicio, mantenimientos, tareas administrativas, estiba, notificaciones y trazabilidad. Es el rol que puede auditar cambios, crear usuarios, activar/desactivar cuentas y administrar datos maestros.",
   },
   {
     role: "Oficina",
     email: "oficina.demo@sistema-portuario.local",
     description:
-      "Gestión administrativa y operativa: clientes, órdenes, tareas, estiba, maquinaria y notificaciones.",
+      "Gestión administrativa y operativa: Puede trabajar con clientes, órdenes, maquinaria, mantenimiento, tareas administrativas, estiba, notificaciones, editar su número de celular y contraseña. Es un rol pensado para personal interno que coordina operaciones y documentación.",
   },
   {
     role: "Encargado",
     email: "encargado.demo@sistema-portuario.local",
     description:
-      "Coordinación operativa: órdenes, asignaciones, mantenimiento, estiba, clientes y seguimiento diario.",
+      "Coordinación operativa: Puede ver y administrar órdenes de servicio, maquinaria, mantenimiento, estiba, tareas administrativas, notificaciones, clientes y editar su teléfono y contraseña. Su foco es coordinar trabajos, asignaciones, seguimiento operativo y cierre de actividades.",
   },
   {
     role: "Operario",
     email: "operario.demo@sistema-portuario.local",
     description:
-      "Acceso operativo limitado: dashboard, órdenes asignadas, finalización de trabajos y notificaciones.",
+      "Acceso operativo limitado: Puede ver el dashboard, consultar sus órdenes de servicio, editar su número de celular, contraseña y gestionar notificaciones. En órdenes, puede finalizar las que tiene asignadas.",
   },
 ];
 

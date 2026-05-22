@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -17,8 +18,15 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { extractErrorMessage } from "@/api/client";
+import { usuariosApi } from "@/api/services";
 import { useAuth } from "@/auth/AuthContext";
 import { puedeVer, type ModuloKey } from "@/auth/permisos";
+import { Button } from "@/components/common/Button";
+import { Field, TextInput } from "@/components/common/Input";
+import { Modal } from "@/components/common/Modal";
+import { useToast } from "@/components/common/Toast";
+import type { Usuario } from "@/types";
 import logo from "@/assets/Logo.jpeg";
 import analystLogo from "@/assets/LogoAnalista.png";
 
@@ -30,8 +38,8 @@ interface NavItem {
 }
 
 /**
- * Navegacion principal del sistema.
- * Cada item declara el módulo requerido para poder filtrar el menu por rol.
+ * Navegación principal del sistema.
+ * Cada item declara el módulo requerido para poder filtrar el menú por rol.
  */
 const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", modulo: "dashboard", icon: LayoutDashboard },
@@ -52,10 +60,13 @@ const NAV: NavItem[] = [
  * Renderiza sidebar, header de usuario y el contenido de la ruta activa.
  */
 export function AppLayout() {
-  const { usuario, logout } = useAuth();
+  const { usuario, logout, updateUsuario } = useAuth();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const visible = NAV.filter((n) => puedeVer(usuario?.rol, n.modulo));
+  const canEditOwnProfileFromMenu = usuario?.rol !== "Administrador";
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -65,6 +76,13 @@ export function AppLayout() {
           {visible.map((n) => (
             <SidebarLink key={n.to} {...n} />
           ))}
+          {canEditOwnProfileFromMenu && (
+            <SidebarButton
+              label="Editar usuario"
+              icon={UserCog}
+              onClick={() => setProfileOpen(true)}
+            />
+          )}
         </nav>
         <DeveloperCredit />
       </aside>
@@ -78,6 +96,13 @@ export function AppLayout() {
               {visible.map((n) => (
                 <SidebarLink key={n.to} {...n} />
               ))}
+              {canEditOwnProfileFromMenu && (
+                <SidebarButton
+                  label="Editar usuario"
+                  icon={UserCog}
+                  onClick={() => setProfileOpen(true)}
+                />
+              )}
             </nav>
             <DeveloperCredit />
           </aside>
@@ -89,7 +114,7 @@ export function AppLayout() {
           <button
             className="rounded-md border border-border p-2 text-foreground hover:bg-muted md:hidden"
             onClick={() => setOpen(true)}
-            aria-label="Abrir menu"
+            aria-label="Abrir menú"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -127,12 +152,22 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      <PerfilUsuarioModal
+        open={profileOpen}
+        usuario={usuario}
+        onClose={() => setProfileOpen(false)}
+        onSaved={(nextUsuario) => {
+          updateUsuario(nextUsuario);
+          toast.success("Usuario actualizado.");
+        }}
+      />
     </div>
   );
 }
 
 /**
- * Encabezado de marca reútilizado en sidebar desktop y menu mobile.
+ * Encabezado de marca reutilizado en sidebar desktop y menú mobile.
  */
 function Brand({ onClose }: { onClose?: () => void }) {
   return (
@@ -150,7 +185,7 @@ function Brand({ onClose }: { onClose?: () => void }) {
         <button
           onClick={onClose}
           className="rounded p-1 text-primary-foreground/70 hover:bg-primary-foreground/10"
-          aria-label="Cerrar menu"
+          aria-label="Cerrar menú"
         >
           <X className="h-5 w-5" />
         </button>
@@ -160,7 +195,7 @@ function Brand({ onClose }: { onClose?: () => void }) {
 }
 
 /**
- * Credito del desarrollador mostrado en el pie del menu lateral.
+ * Crédito del desarrollador mostrado en el pie del menú lateral.
  */
 function DeveloperCredit() {
   return (
@@ -190,5 +225,99 @@ function SidebarLink({ to, label, icon: Icon }: NavItem) {
       <Icon className="h-4 w-4 shrink-0" />
       <span>{label}</span>
     </NavLink>
+  );
+}
+
+function SidebarButton({
+  label,
+  icon: Icon,
+  onClick,
+}: {
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 border-l-2 border-transparent px-4 py-2.5 text-left text-sm text-primary-foreground/70 transition-colors hover:bg-primary-foreground/5 hover:text-primary-foreground"
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function PerfilUsuarioModal({
+  open,
+  usuario,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  usuario: Usuario | null;
+  onClose: () => void;
+  onSaved: (usuario: Usuario) => void;
+}) {
+  const toast = useToast();
+  const [saving, setSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const password = form.get("password")?.toString().trim() ?? "";
+    setPasswordError(null);
+
+    if (password && password.length < 6) {
+      setPasswordError("Debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const nextUsuario = await usuariosApi.updatePerfil({
+        telefono: form.get("telefono")?.toString().trim() || undefined,
+        password: password || undefined,
+      });
+      onSaved(nextUsuario);
+      onClose();
+    } catch (error) {
+      toast.error(extractErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Editar usuario" size="md">
+      <form className="grid gap-4" onSubmit={submit}>
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
+          <div className="font-semibold text-foreground">
+            {usuario?.nombre} {usuario?.apellido}
+          </div>
+          <div className="text-xs text-muted-foreground">{usuario?.correo}</div>
+        </div>
+        <Field label="Teléfono">
+          <TextInput name="telefono" defaultValue={usuario?.telefono ?? ""} maxLength={50} />
+        </Field>
+        <Field
+          label="Nueva contraseña"
+          hint="Dejar en blanco para mantener la contraseña actual."
+          error={passwordError ?? undefined}
+        >
+          <TextInput name="password" type="password" minLength={6} maxLength={100} />
+        </Field>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={saving}>
+            Guardar
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

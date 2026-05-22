@@ -2,7 +2,7 @@
 
 /**
  * Encabezado estándar de página.
- * Reserva un Ã¡rea consistente para tÃ­tulo, descripciÃ³n y acciónes primarias.
+ * Reserva un área consistente para título, descripción y acciones primarias.
  */
 export function PageHeader({
   title,

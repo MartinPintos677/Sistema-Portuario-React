@@ -59,7 +59,7 @@ export const permisosPorRol: Record<RolNombre, ModuloKey[]> = {
 };
 
 /**
- * Helper pequeÃ±o para decidir si una pantalla o acciÃ³n debe mostrarse.
+ * Helper pequeño para decidir si una pantalla o acción debe mostrarse.
  */
 export function puedeVer(rol: string | undefined, modulo: ModuloKey): boolean {
   if (!rol) return false;
