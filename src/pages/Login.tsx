@@ -1,10 +1,12 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuth } from "@/auth/AuthContext";
 import { extractErrorMessage } from "@/api/client";
 import { Button } from "@/components/common/Button";
 import { Field, TextInput } from "@/components/common/Input";
 import { Modal } from "@/components/common/Modal";
+import apiConfig from "@/config/apiConfig";
 import logo from "@/assets/Logo.jpeg";
 import analystLogo from "@/assets/LogoAnalista.png";
 
@@ -51,6 +53,20 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDemoModal, setShowDemoModal] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`${apiConfig.BASE_URL}/Health/warmup`, {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal,
+    }).catch(() => {
+      // El warmup es preventivo: el login conserva su propio manejo de errores y reintentos.
+    });
+
+    return () => controller.abort();
+  }, []);
 
   const selectDemoAccount = (email: string) => {
     setCorreo(email);
