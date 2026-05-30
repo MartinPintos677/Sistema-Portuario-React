@@ -8,8 +8,31 @@ El proyecto fue desarrollado como portfolio técnico profesional, simulando una 
 
 # Demo pública
 
-Frontend link:
-https://sistema-portuario.martinpintos677.workers.dev
+# https://sistema-portuario.martinpintos677.workers.dev
+
+---
+
+# Desarrollo asistido por IA
+
+El proyecto fue desarrollado utilizando un enfoque moderno de AI-assisted development.
+
+La primera base visual del frontend fue generada utilizando Lovable como acelerador inicial de interfaz y estructura visual. Posteriormente, el sistema fue evolucionado, integrado y refinado manualmente mediante trabajo iterativo asistido con Codex y herramientas de IA, enfocándose en:
+
+* integración real con backend ASP.NET Core
+* arquitectura modular
+* autenticación JWT
+* guards por roles
+* trazabilidad
+* refactorización
+* debugging
+* mejoras UX/UI
+* despliegue cloud
+* CI/CD
+* optimización y hardening
+
+El objetivo no fue únicamente generar pantallas, sino construir una demo empresarial coherente, mantenible y preparada para evolucionar como un sistema real.
+
+El proyecto refleja un enfoque moderno de desarrollo donde la IA actúa como acelerador técnico, mientras las decisiones de arquitectura, integración, validación y evolución del sistema continúan dependiendo del criterio del desarrollador.
 
 ---
 
@@ -59,16 +82,16 @@ Estructura modular basada en:
 
 ```text
 src/
- ├── api/
- ├── auth/
- ├── components/
- ├── hooks/
- ├── layouts/
- ├── pages/
- ├── routes/
- ├── services/
- ├── types/
- └── utils/
+├── api/
+├── auth/
+├── components/
+├── hooks/
+├── layouts/
+├── pages/
+├── routes/
+├── services/
+├── types/
+└── utils/
 ```
 
 Incluye:
@@ -99,7 +122,7 @@ Las credenciales se muestran automáticamente en el login para facilitar la eval
 
 Este frontend consume una API ASP.NET Core desplegada en Azure App Service con Azure SQL.
 
-Características:
+Características principales del backend:
 
 * JWT Authentication
 * Refresh Tokens
@@ -107,6 +130,12 @@ Características:
 * Entity Framework Core
 * SQL Server / Azure SQL
 * Swagger/OpenAPI
+* Arquitectura basada en Controllers + Services + DTOs + EF Core
+* Trazabilidad y auditoría
+* Paginación
+* ProblemDetails y manejo global de errores
+
+---
 
 # Deploy
 
@@ -125,10 +154,4 @@ El objetivo del proyecto es demostrar:
 * organización empresarial
 * mantenibilidad
 * escalabilidad
-
----
-
-# Autor
-
-Martin Pintos
-Analista de Sistemas
+  
