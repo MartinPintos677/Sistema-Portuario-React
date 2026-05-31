@@ -35,14 +35,29 @@ export function Modal({
 }: ModalProps) {
   useEffect(() => {
     if (!open) return;
+    const scrollY = window.scrollY;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.width = previousBodyWidth;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      window.scrollTo(0, scrollY);
     };
   }, [open, onClose]);
 
@@ -50,13 +65,13 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+      className="fixed inset-0 z-50 flex overscroll-none items-end justify-center sm:items-center"
       role="dialog"
       aria-modal="true"
     >
       <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={onClose} />
       <div
-        className={`relative flex max-h-[90vh] w-full ${sizes[size]} flex-col rounded-t-xl border border-border bg-card shadow-2xl sm:rounded-xl`}
+        className={`relative flex max-h-[90dvh] w-full ${sizes[size]} flex-col overscroll-contain rounded-t-xl border border-border bg-card shadow-2xl sm:rounded-xl`}
       >
         {(title || description) && (
           <div className="flex min-h-14 items-center justify-between gap-4 border-b border-border px-5 py-3">
@@ -75,7 +90,7 @@ export function Modal({
             </button>
           </div>
         )}
-        <div className="overflow-y-auto px-5 py-4">{children}</div>
+        <div className="overscroll-contain overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-5 py-3">
             {footer}

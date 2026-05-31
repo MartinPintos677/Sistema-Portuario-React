@@ -51,22 +51,34 @@ export function LoginPage() {
   );
   const [password, setPassword] = useState(import.meta.env.DEV ? "clave123" : "");
   const [loading, setLoading] = useState(false);
+  const [loginProgress, setLoginProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showDemoModal, setShowDemoModal] = useState(true);
 
   useEffect(() => {
-    const controller = new AbortController();
-
     fetch(`${apiConfig.BASE_URL}/Health/warmup`, {
       method: "GET",
       cache: "no-store",
-      signal: controller.signal,
+      keepalive: true,
     }).catch(() => {
       // El warmup es preventivo: el login conserva su propio manejo de errores y reintentos.
     });
-
-    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoginProgress(0);
+      return;
+    }
+
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      setLoginProgress(Math.max(4, Math.min(92, (elapsed / 60000) * 92)));
+    }, 250);
+
+    return () => window.clearInterval(timer);
+  }, [loading]);
 
   const selectDemoAccount = (email: string) => {
     setCorreo(email);
@@ -79,9 +91,11 @@ export function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setLoginProgress(4);
     setError(null);
     try {
       await login(correo, password);
+      setLoginProgress(100);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -91,7 +105,11 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-primary p-4">
+    <div
+      className={`flex min-h-screen items-center justify-center p-4 ${
+        showDemoModal ? "bg-card" : "bg-primary"
+      }`}
+    >
       <Modal open={showDemoModal} onClose={() => setShowDemoModal(false)} size="xl">
         <div className="grid gap-5">
           <div className="flex flex-col items-center text-center">
@@ -189,9 +207,18 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 h-11 rounded-md bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            className="relative mt-2 h-11 overflow-hidden rounded-md bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-wait"
           >
-            {loading ? "Ingresando..." : "Ingresar"}
+            {loading && (
+              <span
+                className="absolute inset-y-0 left-0 bg-primary-foreground/20 transition-[width] duration-300 ease-out"
+                style={{ width: `${loginProgress}%` }}
+                aria-hidden="true"
+              />
+            )}
+            <span className="relative z-10">
+              {loading ? `Conectando... ${Math.round(loginProgress)}%` : "Ingresar"}
+            </span>
           </button>
         </form>
       </div>

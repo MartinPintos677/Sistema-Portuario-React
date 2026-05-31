@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
@@ -68,6 +68,31 @@ export function AppLayout() {
   const visible = NAV.filter((n) => puedeVer(usuario?.rol, n.modulo));
   const canEditOwnProfileFromMenu = usuario?.rol !== "Administrador";
 
+  useEffect(() => {
+    if (!open) return;
+    const scrollY = window.scrollY;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPosition = document.body.style.position;
+    const previousBodyTop = document.body.style.top;
+    const previousBodyWidth = document.body.style.width;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.width = previousBodyWidth;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col md:border-r md:border-border md:bg-primary md:text-primary-foreground">
@@ -88,9 +113,9 @@ export function AppLayout() {
       </aside>
 
       {open && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 overscroll-none md:hidden">
           <div className="absolute inset-0 bg-foreground/40" onClick={() => setOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col bg-primary text-primary-foreground shadow-xl">
+          <aside className="relative flex h-full w-72 flex-col overscroll-contain bg-primary text-primary-foreground shadow-xl">
             <Brand onClose={() => setOpen(false)} />
             <nav className="flex-1 overflow-y-auto py-4" onClick={() => setOpen(false)}>
               {visible.map((n) => (
