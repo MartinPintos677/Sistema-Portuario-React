@@ -284,7 +284,19 @@ function diffAuditRecords(previous: JsonRecord, next: JsonRecord) {
     }
   });
 
+  if ("Password" in previousDiff && !("Password" in nextDiff)) {
+    nextDiff.Password = "Nueva contraseña";
+  }
+
+  if ("Password" in nextDiff && !("Password" in previousDiff)) {
+    previousDiff.Password = "Contraseña";
+  }
+
   return { previousDiff, nextDiff };
+}
+
+function isPasswordAuditKey(key: string) {
+  return /^password(hash)?$/i.test(key);
 }
 
 function buildAuditPanels(row: Trazabilidad | null) {
@@ -317,7 +329,7 @@ function buildAuditPanels(row: Trazabilidad | null) {
 }
 
 function humanizeJsonKey(key: string) {
-  if (/^password(hash)?$/i.test(key)) return "Contraseña";
+  if (isPasswordAuditKey(key)) return "Contraseña";
 
   return key
     .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -378,6 +390,10 @@ function renderJsonValue(value: JsonValue): ReactNode {
 function JsonAuditPanel({ title, value }: { title: string; value?: string | JsonValue | null }) {
   const parsed = parseJsonValue(value);
   const recordEntries = isJsonRecord(parsed) ? Object.entries(parsed) : [];
+  const passwordOnlyEntry =
+    recordEntries.length === 1 && isPasswordAuditKey(recordEntries[0]?.[0] ?? "")
+      ? recordEntries[0]
+      : null;
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -390,6 +406,12 @@ function JsonAuditPanel({ title, value }: { title: string; value?: string | Json
         ) : isJsonRecord(parsed) ? (
           recordEntries.length === 0 ? (
             <div className="px-4 py-6 text-sm text-muted-foreground">Sin cambios para mostrar.</div>
+          ) : passwordOnlyEntry ? (
+            <div className="px-4 py-5">
+              <span className="inline-flex rounded-md border border-border bg-muted/60 px-3 py-2 text-sm font-medium text-foreground">
+                {renderJsonValue(passwordOnlyEntry[1])}
+              </span>
+            </div>
           ) : (
             <dl className="divide-y divide-border">
               {recordEntries.map(([key, fieldValue]) => (
