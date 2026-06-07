@@ -317,6 +317,8 @@ function buildAuditPanels(row: Trazabilidad | null) {
 }
 
 function humanizeJsonKey(key: string) {
+  if (/^password(hash)?$/i.test(key)) return "Contraseña";
+
   return key
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/_/g, " ")
