@@ -8,7 +8,7 @@ El proyecto fue desarrollado como portfolio técnico profesional, simulando una 
 
 # Demo pública
 
-# https://sistema-portuario.martinpintos677.workers.dev
+https://sistema-portuario.martinpintos677.workers.dev
 
 ---
 
