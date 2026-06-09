@@ -11,7 +11,19 @@ import type { LoginResponse, ProblemDetails } from "@/types";
 export const apiClient = axios.create({
   baseURL: apiConfig.BASE_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: 65000,
 });
+
+type RetriableRequest = NonNullable<AxiosError<ProblemDetails>["config"]> & {
+  _retry?: boolean;
+  _transientRetryCount?: number;
+};
+
+const TRANSIENT_RETRY_DELAYS_MS = [1500, 4000, 8000];
+
+function delay(ms: number) {
+  return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
+}
 
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
@@ -45,6 +57,27 @@ function isAuthEndpoint(url?: string) {
   );
 }
 
+function isLoginEndpoint(url?: string) {
+  return Boolean(url?.includes("/Auth/login"));
+}
+
+function isSafeRetryMethod(method?: string) {
+  return ["get", "head", "options"].includes((method ?? "get").toLowerCase());
+}
+
+function isTransientStatus(status?: number) {
+  return status === 408 || status === 425 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+function isTransientApiError(error: AxiosError<ProblemDetails>) {
+  return error.message === "Network Error" || error.code === "ERR_NETWORK" || error.code === "ECONNABORTED" || isTransientStatus(error.response?.status);
+}
+
+function canRetryTransientRequest(error: AxiosError<ProblemDetails>, request?: RetriableRequest) {
+  if (!request || !isTransientApiError(error)) return false;
+  return isSafeRetryMethod(request.method) || isLoginEndpoint(request.url);
+}
+
 /**
  * Renueva el access token con el refresh token local.
  * La promesa compartida evita múltiples renovacíones simultáneas.
@@ -75,14 +108,26 @@ async function refreshAccessToken() {
 apiClient.interceptors.response.use(
   (r) => r,
   async (error: AxiosError<ProblemDetails>) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as RetriableRequest | undefined;
+
+    if (canRetryTransientRequest(error, originalRequest)) {
+      const retryCount = originalRequest._transientRetryCount ?? 0;
+      const retryDelay = TRANSIENT_RETRY_DELAYS_MS[retryCount];
+
+      if (retryDelay) {
+        originalRequest._transientRetryCount = retryCount + 1;
+        await delay(retryDelay);
+        return apiClient(originalRequest);
+      }
+    }
+
     if (
       error.response?.status === 401 &&
       originalRequest &&
       !isAuthEndpoint(originalRequest.url) &&
-      !(originalRequest as typeof originalRequest & { _retry?: boolean })._retry
+      !originalRequest._retry
     ) {
-      (originalRequest as typeof originalRequest & { _retry?: boolean })._retry = true;
+      originalRequest._retry = true;
       const newToken = await refreshAccessToken();
       if (newToken) {
         originalRequest.headers = originalRequest.headers ?? {};
@@ -115,8 +160,11 @@ export function extractErrorMessage(error: unknown): string {
     }
     if (error.response?.status === 401) return "Tu sesión expiró. Inicia sesión nuevamente.";
     if (error.response?.status === 403) return "No tienes permisos para realizar esta acción.";
-    if (error.message === "Network Error") {
-      return "No se pudo conectar con el backend. Verifica que la API esté iniciada.";
+    if (isTransientStatus(error.response?.status)) {
+      return "El servidor demoró más de lo esperado. Puede estar despertando; espera unos segundos y vuelve a intentar.";
+    }
+    if (error.message === "Network Error" || error.code === "ERR_NETWORK" || error.code === "ECONNABORTED") {
+      return "La conexión con la API demoró más de lo esperado. Puede estar despertando el servidor o haber una conexión móvil inestable. Espera unos segundos y vuelve a intentar.";
     }
     return "No fue posible completar la operación.";
   }
