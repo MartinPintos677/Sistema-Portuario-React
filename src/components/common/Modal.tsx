@@ -1,10 +1,10 @@
-﻿import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
 
 /**
  * Modal base del sistema.
- * Maneja cierre por Escape, bloqueo de scroll y estructura comun para títulos,
+ * Maneja cierre por Escape, bloqueo de scroll y estructura común para títulos,
  * contenido y pie de acciones.
  */
 interface ModalProps {
@@ -33,8 +33,23 @@ export function Modal({
   footer,
   size = "md",
 }: ModalProps) {
+  const [shouldRender, setShouldRender] = useState(open);
+  const [visible, setVisible] = useState(false);
+
   useEffect(() => {
-    if (!open) return;
+    if (open) {
+      setShouldRender(true);
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    setVisible(false);
+    const timeout = window.setTimeout(() => setShouldRender(false), 220);
+    return () => window.clearTimeout(timeout);
+  }, [open]);
+
+  useEffect(() => {
+    if (!shouldRender) return;
     const scrollY = window.scrollY;
     const previousBodyOverflow = document.body.style.overflow;
     const previousBodyPosition = document.body.style.position;
@@ -59,9 +74,9 @@ export function Modal({
       document.documentElement.style.overflow = previousHtmlOverflow;
       window.scrollTo(0, scrollY);
     };
-  }, [open, onClose]);
+  }, [shouldRender, onClose]);
 
-  if (!open) return null;
+  if (!shouldRender) return null;
 
   return (
     <div
@@ -69,9 +84,16 @@ export function Modal({
       role="dialog"
       aria-modal="true"
     >
-      <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" onClick={onClose} />
       <div
-        className={`relative flex max-h-[90dvh] w-full ${sizes[size]} flex-col overscroll-contain rounded-t-xl border border-border bg-card shadow-2xl sm:rounded-xl`}
+        className={`absolute inset-0 bg-foreground/50 backdrop-blur-sm transition-opacity duration-200 ease-out ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={onClose}
+      />
+      <div
+        className={`relative flex max-h-[90dvh] w-full ${sizes[size]} flex-col overscroll-contain rounded-t-xl border border-border bg-card shadow-2xl transition-all duration-200 ease-out sm:rounded-xl ${
+          visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 sm:translate-y-2"
+        }`}
       >
         {(title || description) && (
           <div className="flex min-h-14 items-center justify-between gap-4 border-b border-border px-5 py-3">

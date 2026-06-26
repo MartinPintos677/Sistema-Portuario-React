@@ -63,13 +63,27 @@ export function AppLayout() {
   const { usuario, logout, updateUsuario } = useAuth();
   const toast = useToast();
   const [open, setOpen] = useState(false);
+  const [menuShouldRender, setMenuShouldRender] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const visible = NAV.filter((n) => puedeVer(usuario?.rol, n.modulo));
   const canEditOwnProfileFromMenu = usuario?.rol !== "Administrador";
 
   useEffect(() => {
-    if (!open) return;
+    if (open) {
+      setMenuShouldRender(true);
+      const frame = window.requestAnimationFrame(() => setMenuVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    setMenuVisible(false);
+    const timeout = window.setTimeout(() => setMenuShouldRender(false), 220);
+    return () => window.clearTimeout(timeout);
+  }, [open]);
+
+  useEffect(() => {
+    if (!menuShouldRender) return;
     const scrollY = window.scrollY;
     const previousBodyOverflow = document.body.style.overflow;
     const previousBodyPosition = document.body.style.position;
@@ -91,7 +105,7 @@ export function AppLayout() {
       document.documentElement.style.overflow = previousHtmlOverflow;
       window.scrollTo(0, scrollY);
     };
-  }, [open]);
+  }, [menuShouldRender]);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -112,10 +126,19 @@ export function AppLayout() {
         <DeveloperCredit />
       </aside>
 
-      {open && (
+      {menuShouldRender && (
         <div className="fixed inset-0 z-40 overscroll-none md:hidden">
-          <div className="absolute inset-0 bg-foreground/40" onClick={() => setOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col overscroll-contain bg-primary text-primary-foreground shadow-xl">
+          <div
+            className={`absolute inset-0 bg-foreground/40 transition-opacity duration-200 ease-out ${
+              menuVisible ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={() => setOpen(false)}
+          />
+          <aside
+            className={`relative flex h-full w-72 flex-col overscroll-contain bg-primary text-primary-foreground shadow-xl transition-transform duration-200 ease-out ${
+              menuVisible ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
             <Brand onClose={() => setOpen(false)} />
             <nav className="flex-1 overflow-y-auto py-4" onClick={() => setOpen(false)}>
               {visible.map((n) => (

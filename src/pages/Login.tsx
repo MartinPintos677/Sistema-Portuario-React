@@ -54,6 +54,11 @@ export function LoginPage() {
   const [loginProgress, setLoginProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showDemoModal, setShowDemoModal] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     fetch(`${apiConfig.BASE_URL}/Health/warmup`, {
@@ -87,6 +92,8 @@ export function LoginPage() {
     setShowDemoModal(false);
   };
 
+  const showInitialDemoModal = hydrated && showDemoModal;
+
   // En demos conviene iniciar siempre en el dashboard para orientar al usuario.
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,10 +114,10 @@ export function LoginPage() {
   return (
     <div
       className={`flex min-h-screen items-center justify-center p-4 ${
-        showDemoModal ? "bg-card" : "bg-primary"
+        !hydrated || showDemoModal ? "bg-card" : "bg-primary"
       }`}
     >
-      <Modal open={showDemoModal} onClose={() => setShowDemoModal(false)} size="xl">
+      <Modal open={showInitialDemoModal} onClose={() => setShowDemoModal(false)} size="xl">
         <div className="grid gap-5">
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-3">
